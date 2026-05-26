@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-9 h-9 bg-[#EAF3DE] rounded-full flex items-center justify-center text-lg">🏃</div>
+              <img src="https://drive.google.com/uc?export=view&id=1EKOwE5QgJf2bNE0a4RgminTDihIw4w-C" alt="QAS Logo" className="h-9 w-9 object-contain rounded-full bg-[#EAF3DE] p-0.5" />
               <div>
                 <div className="text-white font-bold text-base">QAS 克斯有限公司</div>
                 <div className="text-white/40 text-xs">Quality Assessment System</div>

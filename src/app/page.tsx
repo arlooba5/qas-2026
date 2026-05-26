@@ -9,8 +9,8 @@ export default function HomePage() {
       <section className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-[#0d2206] via-[#1a3a0f] to-[#27500a] flex items-center justify-center text-center px-4 py-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5" style={{backgroundImage:'radial-gradient(circle at 30% 50%, #97C459 0%, transparent 50%), radial-gradient(circle at 70% 30%, #639922 0%, transparent 50%)'}} />
         <div className="relative max-w-3xl mx-auto">
-          <div className="inline-block px-4 py-1.5 border border-[#97C459]/40 rounded-full text-[#97C459] text-xs tracking-widest uppercase mb-8">
-            Quality Assessment System
+          <div className="flex justify-center mb-8">
+            <img src="/images/logo-banner.jpg" alt="QAS 克斯有限公司" className="h-16 object-contain rounded-lg" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-white leading-tight mb-6" style={{fontFamily:'Noto Serif TC, serif'}}>
             讓每個人都能<br /><span className="text-[#97C459]">像樣</span>地前行
