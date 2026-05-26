@@ -33,7 +33,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center gap-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <img src="https://drive.google.com/uc?export=view&id=1EKOwE5QgJf2bNE0a4RgminTDihIw4w-C" alt="QAS Logo" className="h-10 w-10 object-contain rounded-full bg-[#EAF3DE] p-0.5" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+          <img src="/images/logo.png" alt="QAS Logo" className="h-10 w-10 object-contain rounded-full bg-[#EAF3DE] p-0.5" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
           <div>
             <div className="text-white font-bold text-sm tracking-wide leading-none">QAS</div>
             <div className="text-white/50 text-[10px] leading-none mt-0.5">克斯有限公司</div>
