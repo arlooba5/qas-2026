@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Course } from '@/lib/types';
 import { COURSES, CATEGORY_EMOJIS } from '@/lib/data';
 import { MapPin, Clock, User } from 'lucide-react';
@@ -16,15 +16,27 @@ export default function CoursesPage() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const snap = await getDocs(query(collection(db, 'courses'), where('status','==','active'), orderBy('createdAt','desc')));
+        const snap = await getDocs(
+          query(collection(db, 'courses'), where('status', '==', 'active'))
+        );
         if (snap.empty) {
           setCourses(COURSES.filter(c => c.status === 'active'));
         } else {
-          setCourses(snap.docs.map(d => ({ id: d.id, ...d.data() } as Course)));
+          const data = snap.docs
+            .map(d => ({ id: d.id, ...d.data() } as Course))
+            .sort((a, b) => {
+              const aTime = (a.createdAt as any)?.seconds ?? 0;
+              const bTime = (b.createdAt as any)?.seconds ?? 0;
+              return bTime - aTime;
+            });
+          setCourses(data);
         }
-      } catch {
+      } catch (err) {
+        console.error('Firestore 讀取失敗，使用本地資料：', err);
         setCourses(COURSES.filter(c => c.status === 'active'));
-      } finally { setLoading(false); }
+      } finally {
+        setLoading(false);
+      }
     };
     fetchCourses();
   }, []);
@@ -34,7 +46,7 @@ export default function CoursesPage() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="text-4xl font-bold text-white mb-2" style={{fontFamily:'Noto Serif TC,serif'}}>📚 課程培訓</h1>
+        <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Noto Serif TC,serif' }}>📚 課程培訓</h1>
         <p className="text-white/60">由實戰專家授課，知識與行動並進</p>
       </div>
       <div className="max-w-7xl mx-auto px-4 py-10">
@@ -73,7 +85,13 @@ export default function CoursesPage() {
                   )}
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <div className="text-lg font-bold text-[#3B6D11]">NT${course.price.toLocaleString()}</div>
-                    <button className="bg-[#3B6D11] hover:bg-[#27500a] text-white text-sm px-4 py-1.5 rounded-full transition-all">立即報名</button>
+                    <a
+                      href={course.registerUrl || 'https://script.google.com/macros/s/AKfycbwK93lH6ImhVFAKcKeMVHL2zdGoS3ndzlVd5_iU2Au6f9usaL_N1qayDMIH5Q_6dcpE/exec'}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-[#3B6D11] hover:bg-[#27500a] text-white text-sm px-4 py-1.5 rounded-full transition-all">
+                      立即報名
+                    </a>
                   </div>
                 </div>
               </div>
