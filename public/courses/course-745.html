@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商務談判與商業模式應用｜克斯有限公司</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green-dark: #1a3d1f;
+    --green-mid: #2d6a35;
+    --green-light: #3d8b47;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --cream: #faf7f0;
+    --white: #ffffff;
+    --text-dark: #1a1a1a;
+    --text-mid: #4a4a4a;
+    --text-light: #7a7a7a;
+    --border: rgba(26,61,31,0.12);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: "Noto Sans TC", sans-serif; background: var(--cream); color: var(--text-dark); line-height: 1.7; font-size: 16px; }
+  .site-header { background: var(--green-dark); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .site-logo { font-family: "Noto Serif TC", serif; font-weight: 900; font-size: 18px; color: var(--gold); letter-spacing: 0.05em; text-decoration: none; }
+  .site-nav { font-size: 13px; color: rgba(255,255,255,0.65); letter-spacing: 0.03em; }
+  .hero { background: var(--green-dark); padding: 72px 32px 80px; position: relative; overflow: hidden; }
+  .hero::before { content: ""; position: absolute; top: -60px; right: -60px; width: 360px; height: 360px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.15); }
+  .hero::after { content: ""; position: absolute; bottom: -80px; right: 40px; width: 500px; height: 500px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.08); }
+  .hero-inner { max-width: 780px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.35); border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 500; color: var(--gold-light); letter-spacing: 0.06em; margin-bottom: 28px; }
+  .hero-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  .hero-cat { font-size: 12px; font-weight: 500; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
+  .hero-title { font-family: "Noto Serif TC", serif; font-size: clamp(26px, 4vw, 38px); font-weight: 900; color: var(--white); line-height: 1.35; margin-bottom: 20px; }
+  .hero-title em { font-style: normal; color: var(--gold-light); }
+  .hero-sub { font-size: 16px; color: rgba(255,255,255,0.72); margin-bottom: 40px; max-width: 540px; line-height: 1.75; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; }
+  .hero-meta-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: rgba(255,255,255,0.8); }
+  .hero-meta-item svg { opacity: 0.65; flex-shrink: 0; }
+  .price-strip { background: var(--green-mid); padding: 20px 32px; }
+  .price-strip-inner { max-width: 780px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .price-info { display: flex; align-items: baseline; gap: 8px; }
+  .price-label { font-size: 13px; color: rgba(255,255,255,0.65); }
+  .price-amount { font-family: "Noto Serif TC", serif; font-size: 28px; font-weight: 900; color: var(--gold-light); }
+  .price-unit { font-size: 14px; color: rgba(255,255,255,0.65); }
+  .slots-info { font-size: 13px; color: rgba(255,255,255,0.65); display: flex; align-items: center; gap: 6px; }
+  .slots-dot { width: 8px; height: 8px; border-radius: 50%; background: #5fcf7a; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--gold); color: var(--green-dark); font-weight: 700; font-size: 15px; padding: 13px 28px; border-radius: 100px; text-decoration: none; transition: background 0.2s, transform 0.15s; letter-spacing: 0.02em; white-space: nowrap; }
+  .cta-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .content { max-width: 780px; margin: 0 auto; padding: 60px 32px 80px; }
+  .sec-label { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: var(--green-mid); text-transform: uppercase; margin-bottom: 12px; }
+  .intro-block { margin-bottom: 60px; }
+  .intro-title { font-family: "Noto Serif TC", serif; font-size: 22px; font-weight: 900; color: var(--green-dark); margin-bottom: 16px; line-height: 1.45; }
+  .intro-text { font-size: 16px; color: var(--text-mid); line-height: 1.85; }
+  .points-block { margin-bottom: 60px; }
+  .points-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
+  .point-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px 22px; position: relative; overflow: hidden; }
+  .point-card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, var(--green-mid), var(--gold)); }
+  .point-num { font-family: "Noto Serif TC", serif; font-size: 32px; font-weight: 900; color: rgba(26,61,31,0.08); line-height: 1; margin-bottom: 12px; }
+  .point-title { font-size: 15px; font-weight: 700; color: var(--green-dark); margin-bottom: 8px; line-height: 1.4; }
+  .point-desc { font-size: 13px; color: var(--text-light); line-height: 1.7; }
+  .info-block { margin-bottom: 60px; }
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-top: 20px; }
+  .info-cell { background: var(--white); padding: 20px; }
+  .info-cell-label { font-size: 11px; font-weight: 500; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .info-cell-value { font-size: 15px; font-weight: 500; color: var(--text-dark); line-height: 1.4; }
+  .info-cell-value.highlight { color: var(--green-mid); font-weight: 700; }
+  .audience-block { margin-bottom: 60px; }
+  .audience-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .audience-tag { background: rgba(45,106,53,0.08); color: var(--green-mid); border: 1px solid rgba(45,106,53,0.2); font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 100px; }
+  .cta-block { background: var(--green-dark); border-radius: 20px; padding: 48px 40px; text-align: center; position: relative; overflow: hidden; }
+  .cta-block::before { content: ""; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.15); }
+  .cta-block-title { font-family: "Noto Serif TC", serif; font-size: 22px; font-weight: 900; color: var(--white); margin-bottom: 10px; position: relative; z-index: 1; }
+  .cta-block-sub { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 28px; position: relative; z-index: 1; }
+  .cta-block .cta-btn { position: relative; z-index: 1; }
+  .site-footer { background: var(--green-dark); padding: 24px 32px; text-align: center; }
+  .site-footer p { font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 0.05em; }
+  @media (max-width: 600px) {
+    .hero { padding: 52px 20px 60px; }
+    .content { padding: 40px 20px 60px; }
+    .price-strip { padding: 16px 20px; }
+    .price-strip-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .site-header { padding: 12px 20px; }
+    .cta-block { padding: 36px 24px; }
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="site-logo" href="#">QAS 克斯有限公司</a>
+  <span class="site-nav">企業培訓 · 顧問服務</span>
+</header>
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">課程編號 745 &nbsp;·&nbsp; 經營策略</div>
+    <div class="hero-cat">談判 × 商業模式</div>
+    <h1 class="hero-title">談判不是靠膽量，<br><em>是靠準備</em></h1>
+    <p class="hero-sub">雙贏思維 × 商模健檢，讓你在商場上更有把握<br>商務談判與商業模式應用</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        7月1日
+      </div>
+      <div class="hero-meta-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        09:00 – 17:00（共 6 小時）
+      </div>
+      <div class="hero-meta-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        台中市北屯區文心路四段955號17樓
+      </div>
+      <div class="hero-meta-item">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        講師：蘇達人 ｜ 名額 30 人
+      </div>
+    </div>
+  </div>
+</section>
+<div class="price-strip">
+  <div class="price-strip-inner">
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div class="price-info">
+        <span class="price-label">課程費用</span>
+        <span class="price-amount">NT$ 6,000</span>
+        <span class="price-unit">/ 人</span>
+      </div>
+      <div class="slots-info">
+        <span class="slots-dot"></span>
+        招募中 · 剩餘名額有限
+      </div>
+    </div>
+    <a href="#contact" class="cta-btn">
+      立即預約諮詢
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+</div>
+<main class="content">
+  <div class="intro-block">
+    <div class="sec-label">課程介紹</div>
+    <h2 class="intro-title">每一場談判，都是一場準備充分的對話</h2>
+    <p class="intro-text">這堂課從談判心法與籌碼運用出發，延伸到商業模式健檢與數位轉型評估，再到客戶開發與提案關鍵技巧。幫助員工在商場上建立更強的競爭力與成交底氣——不靠運氣，靠系統性的準備與策略性的思維。</p>
+  </div>
+  <div class="points-block">
+    <div class="sec-label">三大課程亮點</div>
+    <div class="points-grid">
+      <div class="point-card">
+        <div class="point-num">01</div>
+        <div class="point-title">談判心法與籌碼</div>
+        <div class="point-desc">學習達成雙贏的談判策略，掌握籌碼運用技術，讓每場談判都有備而來</div>
+      </div>
+      <div class="point-card">
+        <div class="point-num">02</div>
+        <div class="point-title">商業模式健檢</div>
+        <div class="point-desc">評估現行模式的優劣勢，找出數位轉型的突破方向，超越同業競爭</div>
+      </div>
+      <div class="point-card">
+        <div class="point-num">03</div>
+        <div class="point-title">商務開發技巧</div>
+        <div class="point-desc">客戶開發與提案的關鍵能力強化，讓業務開發從苦差事變成有方法的藝術</div>
+      </div>
+    </div>
+  </div>
+  <div class="info-block">
+    <div class="sec-label">課程資訊</div>
+    <div class="info-grid">
+      <div class="info-cell">
+        <div class="info-cell-label">上課日期</div>
+        <div class="info-cell-value highlight">2025年 7月1日</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-label">上課時間</div>
+        <div class="info-cell-value">09:00 – 17:00</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-label">課程時數</div>
+        <div class="info-cell-value">6 小時</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-label">授課講師</div>
+        <div class="info-cell-value">蘇達人</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-label">招募名額</div>
+        <div class="info-cell-value">30 人</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-label">課程費用</div>
+        <div class="info-cell-value highlight">NT$ 6,000</div>
+      </div>
+      <div class="info-cell" style="grid-column: 1 / -1;">
+        <div class="info-cell-label">上課地點</div>
+        <div class="info-cell-value">台中市北屯區文心路四段955號17樓</div>
+      </div>
+    </div>
+  </div>
+  <div class="audience-block">
+    <div class="sec-label">適合對象</div>
+    <div class="audience-tags">
+      <span class="audience-tag">業務主管</span>
+      <span class="audience-tag">採購人員</span>
+      <span class="audience-tag">創業者</span>
+      <span class="audience-tag">中高階主管</span>
+    </div>
+  </div>
+  <div class="cta-block" id="contact">
+    <div class="cta-block-title">準備好在談判桌上更有把握了嗎？</div>
+    <p class="cta-block-sub">名額有限，歡迎聯繫我們了解更多課程細節</p>
+    <a href="tel:0917179808" class="cta-btn">
+      預約諮詢
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+</main>
+<footer class="site-footer">
+  <p>© 克斯有限公司 · 台中市北屯區文心路四段955號17樓 · 0917-179808 張先生</p>
+</footer>
+</body>
+</html>
