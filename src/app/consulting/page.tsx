@@ -12,6 +12,8 @@ interface Consultant {
   emoji: string;
   tags: string[];
   status: string;
+  photoUrl?: string;
+  detailUrl?: string;
 }
 
 interface ConsultingSlot {
@@ -181,11 +183,32 @@ export default function ConsultingPage() {
                     onClick={() => setExpandedConsultant(isExpanded ? null : consultantName)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#1a3a0f] to-[#639922] flex items-center justify-center text-2xl flex-shrink-0">
-                        {info?.emoji || '👤'}
-                      </div>
+                      {info?.detailUrl ? (
+                        <a href={info.detailUrl} target="_blank" rel="noreferrer" className="flex-shrink-0">
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#1a3a0f] to-[#639922] flex items-center justify-center text-2xl overflow-hidden hover:opacity-80 transition-opacity">
+                            {info.photoUrl ? (
+                              <img src={info.photoUrl} alt={consultantName} className="w-full h-full object-cover" />
+                            ) : (
+                              <span>{info?.emoji || '👤'}</span>
+                            )}
+                          </div>
+                        </a>
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#1a3a0f] to-[#639922] flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
+                          {info?.photoUrl ? (
+                            <img src={info.photoUrl} alt={consultantName} className="w-full h-full object-cover" />
+                          ) : (
+                            <span>{info?.emoji || '👤'}</span>
+                          )}
+                        </div>
+                      )}
                       <div>
-                        <div className="font-bold text-[#1a3a0f] text-lg">{consultantName}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-[#1a3a0f] text-lg">{consultantName}</span>
+                          {info?.detailUrl && (
+                            <a href={info.detailUrl} target="_blank" rel="noreferrer" className="text-xs text-[#639922] hover:underline">查看介紹 →</a>
+                          )}
+                        </div>
                         {info?.title && <div className="text-sm text-gray-500">{info.title}</div>}
                         {info?.tags && (
                           <div className="flex gap-1 flex-wrap mt-1">
