@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { MapPin, Clock, User, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Consultant {
@@ -127,6 +127,14 @@ export default function ConsultingPage() {
         source: 'website',
         createdAt: serverTimestamp(),
       });
+      // 更新時段 enrolled +1
+      await updateDoc(doc(db, 'consultingSlots', selectedSlot.id), {
+        enrolled: increment(1),
+      });
+      // 本地狀態同步更新
+      setSlots(prev => prev.map(s =>
+        s.id === selectedSlot.id ? { ...s, enrolled: s.enrolled + 1 } : s
+      ));
       setSubmitted(true);
     } catch (err) {
       alert('送出失敗，請稍後再試');
