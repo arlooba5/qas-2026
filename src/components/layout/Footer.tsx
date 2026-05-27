@@ -8,10 +8,7 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5 mb-3">
               <img src="/images/logo.png" alt="QAS Logo" className="h-9 w-9 object-contain rounded-full bg-[#EAF3DE] p-0.5" />
-              <div>
-                <div className="text-white font-bold text-base">QAS 克斯有限公司</div>
-
-              </div>
+              <div className="text-white font-bold text-base">QAS 克斯有限公司</div>
             </div>
             <p className="text-sm leading-relaxed mb-3">系統整合的教育服務<br />從未知到已知，從已知到知行合一</p>
             <div className="text-xs text-white/40 space-y-1">
