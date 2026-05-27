@@ -86,7 +86,7 @@ export default function CoursesPage() {
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <div className="text-lg font-bold text-[#3B6D11]">NT${course.price.toLocaleString()}</div>
                     <a
-                      href={course.registerUrl || 'https://script.google.com/macros/s/AKfycbwK93lH6ImhVFAKcKeMVHL2zdGoS3ndzlVd5_iU2Au6f9usaL_N1qayDMIH5Q_6dcpE/exec'}
+                      href={(course as any).registerUrl || 'https://script.google.com/macros/s/AKfycbwK93lH6ImhVFAKcKeMVHL2zdGoS3ndzlVd5_iU2Au6f9usaL_N1qayDMIH5Q_6dcpE/exec'}
                       target="_blank"
                       rel="noreferrer"
                       className="bg-[#3B6D11] hover:bg-[#27500a] text-white text-sm px-4 py-1.5 rounded-full transition-all">
