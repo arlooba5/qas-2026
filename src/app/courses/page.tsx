@@ -141,15 +141,28 @@ export default function CoursesPage() {
               const originalPrice = course.price;
               const discountedPrice = getDiscountedPrice(originalPrice);
               const hasDiscount = discountedPrice < originalPrice;
+              const detailUrl = (course as any).detailUrl;
               return (
                 <div key={course.id} className="card overflow-hidden group">
-                  <div className="h-40 bg-gradient-to-br from-[#1a3a0f] to-[#639922] flex items-center justify-center relative">
-                    <span className="text-5xl">{CATEGORY_EMOJIS[course.category] || '📘'}</span>
-                    <span className="absolute top-3 left-3 bg-white/20 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">{course.category}</span>
-                    <span className="absolute top-3 right-3 bg-[#EAF3DE] text-[#3B6D11] text-xs px-2.5 py-1 rounded-full font-medium">
-                      {course.status === 'full' ? '額滿' : '招生中'}
-                    </span>
-                  </div>
+                  {/* 圖片區塊：有 detailUrl 就可點擊 */}
+                  {detailUrl ? (
+                    <a href={detailUrl} target="_blank" rel="noreferrer"
+                      className="h-40 bg-gradient-to-br from-[#1a3a0f] to-[#639922] flex items-center justify-center relative block cursor-pointer hover:opacity-90 transition-opacity">
+                      <span className="text-5xl">{CATEGORY_EMOJIS[course.category] || '📘'}</span>
+                      <span className="absolute top-3 left-3 bg-white/20 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">{course.category}</span>
+                      <span className="absolute top-3 right-3 bg-[#EAF3DE] text-[#3B6D11] text-xs px-2.5 py-1 rounded-full font-medium">
+                        {course.status === 'full' ? '額滿' : '招生中'}
+                      </span>
+                    </a>
+                  ) : (
+                    <div className="h-40 bg-gradient-to-br from-[#1a3a0f] to-[#639922] flex items-center justify-center relative">
+                      <span className="text-5xl">{CATEGORY_EMOJIS[course.category] || '📘'}</span>
+                      <span className="absolute top-3 left-3 bg-white/20 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">{course.category}</span>
+                      <span className="absolute top-3 right-3 bg-[#EAF3DE] text-[#3B6D11] text-xs px-2.5 py-1 rounded-full font-medium">
+                        {course.status === 'full' ? '額滿' : '招生中'}
+                      </span>
+                    </div>
+                  )}
                   <div className="p-5">
                     <h3 className="font-bold text-[#1a3a0f] mb-3 leading-snug text-sm">{course.name}</h3>
                     <div className="space-y-1.5 mb-4">
@@ -157,10 +170,6 @@ export default function CoursesPage() {
                       <div className="flex items-center gap-2 text-xs text-gray-500"><User size={13} /> {course.instructor} 講師</div>
                       <div className="flex items-center gap-2 text-xs text-gray-500"><MapPin size={13} /> {course.location || '台中文心路四段955號17樓'}</div>
                     </div>
-                    {(course as any).detailUrl && (
-                      <a href={(course as any).detailUrl} target="_blank" rel="noreferrer"
-                        className="text-xs text-[#639922] hover:underline block mb-3">📄 查看課程說明 →</a>
-                    )}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <div>
                         {hasDiscount ? (
