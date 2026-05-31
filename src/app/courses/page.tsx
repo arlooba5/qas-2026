@@ -15,15 +15,15 @@ const DISCOUNT_MAP: Record<string, number> = {
   gold: 0.7,
   silver: 0.8,
   basic: 1,
-  consultant: 0.6,
-  bni: 0.6,
+  consultant: 0.7,
+  bni: 0.8,
 };
 
 const DISCOUNT_LABEL: Record<string, string> = {
   gold: '金卡會員 7折',
   silver: '銀卡會員 8折',
   basic: '',
-  consultant: '顧問 6折',
+  consultant: '顧問 7折',
   bni: 'BNI會員 6折',
 };
 
