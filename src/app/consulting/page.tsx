@@ -14,6 +14,7 @@ interface Consultant {
   status: string;
   photoUrl?: string;
   detailUrl?: string;
+  fee?: number;
 }
 
 interface ConsultingSlot {
@@ -82,15 +83,16 @@ export default function ConsultingPage() {
     ? slots
     : slots.filter(s => s.consultantName === selectedConsultant);
 
-  // 依顧問分組
+  // 依顧問分組（優先用 consultantId，fallback 用 consultantName）
   const slotsByConsultant = filteredSlots.reduce((acc, slot) => {
-    if (!acc[slot.consultantName]) acc[slot.consultantName] = [];
-    acc[slot.consultantName].push(slot);
+    const key = slot.consultantId || slot.consultantName;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(slot);
     return acc;
   }, {} as Record<string, ConsultingSlot[]>);
 
-  const getConsultantInfo = (name: string) =>
-    consultants.find(c => c.name === name);
+  const getConsultantInfo = (consultantId: string, name: string) =>
+    consultants.find(c => c.id === consultantId) || consultants.find(c => c.name === name);
 
   const handleBook = (slot: ConsultingSlot) => {
     setSelectedSlot(slot);
@@ -172,8 +174,9 @@ export default function ConsultingPage() {
           <div className="text-center py-20 text-gray-400">目前沒有開放的諮詢時段</div>
         ) : (
           <div className="space-y-6">
-            {Object.entries(slotsByConsultant).map(([consultantName, consultantSlots]) => {
-              const info = getConsultantInfo(consultantName);
+            {Object.entries(slotsByConsultant).map(([key, consultantSlots]) => {
+              const consultantName = consultantSlots[0]?.consultantName || key;
+              const info = getConsultantInfo(consultantSlots[0]?.consultantId || '', consultantName);
               const isExpanded = expandedConsultant === consultantName;
               return (
                 <div key={consultantName} className="card overflow-hidden">
@@ -203,13 +206,14 @@ export default function ConsultingPage() {
                         </div>
                       )}
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-[#1a3a0f] text-lg">{consultantName}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-[#1a3a0f] text-lg">{info?.name || consultantName}</span>
                           {info?.detailUrl && (
                             <a href={info.detailUrl} target="_blank" rel="noreferrer" className="text-xs text-[#639922] hover:underline">查看介紹 →</a>
                           )}
                         </div>
-                        {info?.title && <div className="text-sm text-gray-500">{info.title}</div>}
+                        {info?.title && <div className="text-sm text-[#3B6D11] font-medium">{info.title}</div>}
+                        {!info?.title && <div className="text-sm text-gray-500">{consultantName}</div>}
                         {info?.tags && (
                           <div className="flex gap-1 flex-wrap mt-1">
                             {info.tags.map((tag: string) => (
