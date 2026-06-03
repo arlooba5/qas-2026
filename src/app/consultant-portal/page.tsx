@@ -192,7 +192,7 @@ export default function ConsultantPortalPage() {
     reader.readAsDataURL(file);
   };
 
-  // ── 上傳照片到 GitHub（透過 Apps Script）─────────────────────────────────
+  // ── 上傳照片到 GitHub（透過 Apps Script，FormData 避免 CORS）────────────
   const uploadPhoto = async (): Promise<string> => {
     if (!photoFile || !member?.name) return profileForm.photoUrl;
     setPhotoUploading(true);
@@ -205,15 +205,18 @@ export default function ConsultantPortalPage() {
       });
       const ext = photoFile.name.split(".").pop() ?? "jpg";
       const filename = `${member.name}.${ext}`;
+
+      const form = new FormData();
+      form.append("payload", JSON.stringify({
+        action: "uploadImageToGitHub",
+        filename,
+        base64,
+        mimeType: photoFile.type,
+      }));
+
       const resp = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "uploadImageToGitHub",
-          filename,
-          base64,
-          mimeType: photoFile.type,
-        }),
+        body: form,
       });
       const result = await resp.json();
       if (result.success) {
