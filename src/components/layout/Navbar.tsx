@@ -1,16 +1,15 @@
 'use client';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useState } from 'react';
-import { Menu, X, ChevronDown, User, LogOut, Settings } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 
 const NAV_LINKS = [
   { href: '/', label: '首頁' },
   { href: '/reports', label: '檢測報告' },
   { href: '/courses', label: '課程' },
-  { href: '/consulting', label: '諮詢預約' },
+  { href: '/consultants', label: '專家諮詢' },
   { href: '/events', label: '活動' },
   { href: '/about', label: '關於我們' },
 ];
@@ -21,6 +20,8 @@ export default function Navbar() {
   const { user, member, logout, isAdmin, isStaff } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const isConsultant = member?.role === 'consultant' || member?.role === 'admin';
 
   const handleLogout = async () => {
     await logout();
@@ -33,7 +34,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center gap-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <img src="/images/logo.png" alt="QAS Logo" className="h-10 w-10 object-contain rounded-full bg-[#EAF3DE] p-0.5" onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
+          <img src="/images/logo.png" alt="QAS Logo" className="h-10 w-10 object-contain rounded-full bg-[#EAF3DE] p-0.5"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
           <div>
             <div className="text-white font-bold text-sm tracking-wide leading-none">QAS</div>
             <div className="text-white/50 text-[10px] leading-none mt-0.5">克斯有限公司</div>
@@ -65,18 +67,33 @@ export default function Navbar() {
                 <span className="text-white text-sm">{member?.name || user.email?.split('@')[0]}</span>
                 <ChevronDown size={14} className="text-white/70" />
               </button>
+
               {userMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
-                  <Link href="/member" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                  <Link href="/member"
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setUserMenuOpen(false)}>
                     <User size={15} /> 會員中心
                   </Link>
+
+                  {/* 顧問後台：role = consultant 或 admin */}
+                  {isConsultant && (
+                    <Link href="/consultant-portal"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#3B6D11] hover:bg-[#EAF3DE] font-medium"
+                      onClick={() => setUserMenuOpen(false)}>
+                      <LayoutDashboard size={15} /> 顧問後台
+                    </Link>
+                  )}
+
+                  {/* 後台管理：admin 或 staff */}
                   {isStaff && (
-                    <Link href="/admin" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                    <Link href="/admin"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setUserMenuOpen(false)}>
                       <Settings size={15} /> 後台管理
                     </Link>
                   )}
+
                   <hr className="my-1" />
                   <button onClick={handleLogout}
                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
@@ -87,10 +104,12 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Link href="/login" className="text-white/80 hover:text-white text-sm px-3 py-1.5 rounded-full border border-white/20 hover:border-white/40 transition-all">
+              <Link href="/login"
+                className="text-white/80 hover:text-white text-sm px-3 py-1.5 rounded-full border border-white/20 hover:border-white/40 transition-all">
                 登入
               </Link>
-              <Link href="/register" className="bg-[#639922] hover:bg-[#97C459] text-white text-sm px-4 py-1.5 rounded-full transition-all font-medium">
+              <Link href="/register"
+                className="bg-[#639922] hover:bg-[#97C459] text-white text-sm px-4 py-1.5 rounded-full transition-all font-medium">
                 免費註冊
               </Link>
             </>
@@ -113,13 +132,34 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <div className="flex gap-2 mt-3">
+          <div className="flex flex-col gap-2 mt-3">
             {user ? (
-              <Link href="/member" className="btn-white text-sm" onClick={() => setMobileOpen(false)}>會員中心</Link>
+              <>
+                <Link href="/member"
+                  className="text-center text-white border border-white/30 py-2 rounded-full text-sm"
+                  onClick={() => setMobileOpen(false)}>
+                  會員中心
+                </Link>
+                {isConsultant && (
+                  <Link href="/consultant-portal"
+                    className="text-center bg-[#639922] text-white py-2 rounded-full text-sm font-medium"
+                    onClick={() => setMobileOpen(false)}>
+                    顧問後台
+                  </Link>
+                )}
+              </>
             ) : (
               <>
-                <Link href="/login" className="flex-1 text-center text-white border border-white/30 py-2 rounded-full text-sm" onClick={() => setMobileOpen(false)}>登入</Link>
-                <Link href="/register" className="flex-1 text-center bg-[#639922] text-white py-2 rounded-full text-sm font-medium" onClick={() => setMobileOpen(false)}>免費註冊</Link>
+                <Link href="/login"
+                  className="flex-1 text-center text-white border border-white/30 py-2 rounded-full text-sm"
+                  onClick={() => setMobileOpen(false)}>
+                  登入
+                </Link>
+                <Link href="/register"
+                  className="flex-1 text-center bg-[#639922] text-white py-2 rounded-full text-sm font-medium"
+                  onClick={() => setMobileOpen(false)}>
+                  免費註冊
+                </Link>
               </>
             )}
           </div>
