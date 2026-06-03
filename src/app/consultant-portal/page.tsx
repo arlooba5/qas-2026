@@ -562,11 +562,13 @@ export default function ConsultantPortalPage() {
                     onChange={e => setProfileForm(f => ({ ...f, emoji: e.target.value }))}
                     placeholder="👤" className={inputCls} />
                 </ProfileFormField>
-                <ProfileFormField label="顯示排序（數字越小越前面）">
-                  <input type="number" min={1} value={profileForm.displayOrder}
-                    onChange={e => setProfileForm(f => ({ ...f, displayOrder: Number(e.target.value) }))}
-                    className={inputCls} />
-                </ProfileFormField>
+                {member.role === "admin" && (
+                  <ProfileFormField label="顯示排序（數字越小越前面）">
+                    <input type="number" min={1} value={profileForm.displayOrder}
+                      onChange={e => setProfileForm(f => ({ ...f, displayOrder: Number(e.target.value) }))}
+                      className={inputCls} />
+                  </ProfileFormField>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <ProfileFormField label="詳細頁連結（選填）">
