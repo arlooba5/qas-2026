@@ -77,8 +77,9 @@ export interface Member {
   name: string;
   email: string;
   phone?: string;
-  role: 'member' | 'staff' | 'admin';
+  role: 'member' | 'staff' | 'admin' | 'consultant';
   level: 'basic' | 'silver' | 'gold';
   points: number;
+  consultantId?: string;
   createdAt: string;
 }
