@@ -21,7 +21,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const isConsultant = member?.role === 'consultant' || member?.role === 'admin';
+  const isConsultant = (member?.role as string) === 'consultant' || (member?.role as string) === 'admin';
 
   const handleLogout = async () => {
     await logout();
