@@ -248,12 +248,20 @@ export default function ConsultantsPage() {
                     </p>
                   )}
 
-                  {/* 預約按鈕 */}
-                  <button
-                    onClick={() => openModal(c)}
-                    className="w-full bg-[#639922] hover:bg-[#3B6D11] text-white py-2.5 rounded-xl text-sm font-semibold transition-colors">
-                    📅 預約諮詢
-                  </button>
+                  {/* 按鈕區 */}
+                  <div className="flex gap-2">
+                    {c.detailUrl && (
+                      <a href={c.detailUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 border border-[#639922] text-[#3B6D11] py-2.5 rounded-xl text-sm font-semibold text-center hover:bg-[#EAF3DE] transition-colors">
+                        🔍 查看介紹
+                      </a>
+                    )}
+                    <button
+                      onClick={() => openModal(c)}
+                      className={`${c.detailUrl ? 'flex-1' : 'w-full'} bg-[#639922] hover:bg-[#3B6D11] text-white py-2.5 rounded-xl text-sm font-semibold transition-colors`}>
+                      📅 預約諮詢
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
