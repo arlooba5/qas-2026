@@ -619,11 +619,11 @@ export default function ConsultantPortalPage() {
       {/* 時段 Modal */}
       {showSlotModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-[#1a3a0f] rounded-2xl p-6 w-full max-w-md border border-[#3B6D11]">
-            <h3 className="text-white font-bold text-lg mb-5">
+          <div className="bg-[#1a3a0f] rounded-2xl w-full max-w-md border border-[#3B6D11] max-h-[90vh] flex flex-col">
+            <h3 className="text-white font-bold text-lg p-6 pb-4 shrink-0">
               {editingSlot ? "編輯時段" : "新增諮詢時段"}
             </h3>
-            <div className="space-y-4">
+            <div className="overflow-y-auto px-6 pb-2 flex-1 space-y-4">
               <ModalField label="日期">
                 <input type="date" value={slotForm.date}
                   onChange={e => setSlotForm({ ...slotForm, date: e.target.value })} className={inputCls} />
@@ -666,7 +666,7 @@ export default function ConsultantPortalPage() {
                   placeholder="例：僅接受 Zoom 視訊" className={inputCls} />
               </ModalField>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 p-6 pt-4 shrink-0">
               <button onClick={() => setShowSlotModal(false)}
                 className="flex-1 border border-[#3B6D11] text-[#97C459] py-2.5 rounded-lg text-sm font-medium hover:bg-[#3B6D11]/30 transition-colors">
                 取消
