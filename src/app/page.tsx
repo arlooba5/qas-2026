@@ -13,20 +13,11 @@ export default function HomePage() {
             <img src="/images/logo-banner.jpg" alt="QAS 克斯有限公司" className="h-20 object-contain" style={{maxWidth:'280px'}} onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}} />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-white leading-tight mb-6" style={{fontFamily:'Noto Serif TC, serif'}}>
-            讓每個人都能<br /><span className="text-[#97C459]">像樣</span>地前行
+            讓每個人都能<br /><span className="text-[#97C459]">輕易找到前行的路</span>
           </h1>
-          <p className="text-white/60 text-lg leading-relaxed mb-10">
-            從檢測出發，重新描繪您的 GPS 地圖<br />
-            知道「我在哪」，更知道「我要去哪」
+          <p className="text-white/60 text-lg leading-relaxed">
+            幫助每一個人，找到動力、方向、方法
           </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/reports" className="bg-[#639922] hover:bg-[#97C459] text-white px-8 py-3.5 rounded-full font-medium text-base transition-all duration-200 flex items-center gap-2">
-              開始檢測 <ArrowRight size={16} />
-            </Link>
-            <Link href="/courses" className="border border-white/30 hover:border-white/60 text-white px-8 py-3.5 rounded-full font-medium text-base transition-all duration-200">
-              探索課程
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -36,13 +27,15 @@ export default function HomePage() {
           <div className="text-center mb-14">
             <div className="section-label">我們的方法</div>
             <h2 className="section-title" style={{fontFamily:'Noto Serif TC, serif'}}>您的專屬 GPS 地圖</h2>
-            <p className="text-gray-500 max-w-xl mx-auto leading-relaxed">傳統地圖只告訴你「怎麼走」，我們的 GPS 多了兩件最重要的事：你現在在哪，以及你真正想去哪。</p>
+            <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
+              透過量子檢測，我們從您的神態、氣色、行為模式與思維結構中，精準解讀您當下的狀態與潛在能量。就像冰鑑識人術所揭示的——每個人都有屬於自己的底色與時勢，找到它，才能真正啟動前行的力量。我們幫您看清「現在在哪」、「適合往哪走」，以及「用什麼方式走得最穩」。
+            </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              {num:'01', icon:'🔍', title:'我在哪裡', desc:'透過科學化的多維度檢測，清晰描繪您目前的狀態——個人特質、組織健康、商業現況。'},
-              {num:'02', icon:'🎯', title:'我要去哪', desc:'結合您的價值觀與願景，定義真正想到達的目標，不是別人設定的終點，是您自己的理想。'},
-              {num:'03', icon:'🚀', title:'如何抵達', desc:'透過課程、諮詢與教練陪伴，從未知到已知，從已知到知行合一，真正讓成長發生。'},
+              {num:'01', icon:'🧭', title:'先找方向', desc:'透過量子診斷報告，從多維度解析您的特質與當下處境，幫您找到最適合的前行方向，不走冤枉路。'},
+              {num:'02', icon:'⚡', title:'再找動力', desc:'方向清晰，動力自然湧現。我們協助您連結內在驅動力，讓每一步都走在對的能量頻率上。'},
+              {num:'03', icon:'🛤️', title:'方法自然產生', desc:'當方向與動力到位，具體的方法與行動就會自然浮現。課程、諮詢、教練陪伴，讓成長真正發生。'},
             ].map((item) => (
               <div key={item.num} className="p-8 rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-[#639922] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
