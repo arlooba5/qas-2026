@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { href: '/courses', label: '課程' },
   { href: '/consultants', label: '專家諮詢' },
   { href: '/events', label: '活動' },
+  { href: '/soil-plan', label: '土壤計畫' },
   { href: '/about', label: '關於我們' },
 ];
 
