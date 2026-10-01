@@ -131,6 +131,17 @@ export default function SoilPlanPage() {
       </section>
 
       <div className="mx-auto max-w-3xl px-6 py-12">
+        {/* Growth map */}
+        <figure className="mb-10">
+          <img
+            src="/soil-plan/growth-map-2027.webp"
+            alt="克斯 2027 年度學習地圖：以成長意識為核心，向外發展用人、行銷、財務、團隊、數位創新五個經營面向"
+            width={1536}
+            height={1024}
+            className="w-full h-auto rounded-xl shadow-sm"
+          />
+        </figure>
+
         {/* Intro */}
         <p className="mb-4 leading-relaxed">
           土壤計畫相信教育訓練不是輸入資訊，而是創造情境讓人自然成長。這個信念落到課程架構上，就是把
@@ -215,6 +226,13 @@ export default function SoilPlanPage() {
 
         <footer className="mt-12 border-t border-[#d3dbd1] pt-5 text-sm text-[#54645b]">
           成長意識為核心，五大面向為向外延伸的課程場域，講師可依專長從任一面向、任一養份形式切入設計，並在教學中呼應成長意識的核心提問。
+          <img
+            src="/soil-plan/qas-logo-banner.webp"
+            alt="QAS 克斯有限公司"
+            width={387}
+            height={120}
+            className="mt-6 h-12 w-auto rounded"
+          />
         </footer>
       </div>
     </div>
