@@ -45,6 +45,10 @@ interface ConsultantProfile {
   displayOrder: number;
   status: "active" | "inactive";
   consultingNote: string;
+  roleType?: "consultant" | "instructor";
+  experience: string[];
+  certifications: string[];
+  courses: string[];
 }
 
 interface ConsultingSlot {
@@ -65,6 +69,7 @@ const EMPTY_PROFILE: Omit<ConsultantProfile, "id"> = {
   name: "", title: "", description: "", tags: [],
   photoUrl: "", detailUrl: "", emoji: "👤",
   displayOrder: 99, status: "active", consultingNote: "",
+  roleType: "consultant", experience: [], certifications: [], courses: [],
 };
 
 // ─── 主元件 ──────────────────────────────────────────────────────────────────
@@ -111,7 +116,7 @@ export default function ConsultantPortalPage() {
         const snap = await getDoc(doc(db, "members", u.uid));
         if (snap.exists()) {
           const data = snap.data() as MemberData;
-          if (data.role !== "consultant" && data.role !== "admin") {
+          if (data.role !== "consultant" && data.role !== "admin" && data.role !== "instructor") {
             setAccessDenied(true);
           } else {
             setMember({ ...data, uid: u.uid });
@@ -140,6 +145,10 @@ export default function ConsultantPortalPage() {
         displayOrder: data.displayOrder ?? 99,
         status: data.status ?? "active",
         consultingNote: data.consultingNote ?? "",
+        roleType: data.roleType === "instructor" ? "instructor" : "consultant",
+        experience: data.experience ?? [],
+        certifications: data.certifications ?? [],
+        courses: data.courses ?? [],
       });
       setPhotoPreview(data.photoUrl || null);
     }
@@ -239,7 +248,14 @@ export default function ConsultantPortalPage() {
       if (photoFile) {
         photoUrl = await uploadPhoto();
       }
-      const payload = { ...profileForm, photoUrl };
+      const cleanList = (a: string[]) => (a ?? []).map(x => x.trim()).filter(Boolean);
+      const payload = {
+        ...profileForm,
+        photoUrl,
+        experience: cleanList(profileForm.experience),
+        certifications: cleanList(profileForm.certifications),
+        courses: cleanList(profileForm.courses),
+      };
       await setDoc(doc(db, "consultants", member.consultantId), payload, { merge: true });
       setProfileForm(f => ({ ...f, photoUrl }));
       setPhotoPreview(photoUrl);
@@ -516,6 +532,38 @@ export default function ConsultantPortalPage() {
                 <textarea rows={4} value={profileForm.description}
                   onChange={e => setProfileForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="請簡述您的專業背景與服務特色..."
+                  className={inputCls + " resize-none"} />
+              </ProfileFormField>
+              {member?.consultantId && (
+                <a href={"/consultants/" + member.consultantId} target="_blank" rel="noopener noreferrer"
+                  className="inline-block text-sm text-[#97C459] hover:underline">
+                  查看我的公開介紹頁（儲存後約 1 分鐘更新）
+                </a>
+              )}
+              <ProfileFormField label="身份">
+                <select value={profileForm.roleType ?? "consultant"}
+                  onChange={e => setProfileForm(f => ({ ...f, roleType: e.target.value as "consultant" | "instructor" }))}
+                  className={inputCls}>
+                  <option value="consultant">顧問</option>
+                  <option value="instructor">講師</option>
+                </select>
+              </ProfileFormField>
+              <ProfileFormField label="經歷（一行一筆）">
+                <textarea rows={3} value={(profileForm.experience ?? []).join("\n")}
+                  onChange={e => setProfileForm(f => ({ ...f, experience: e.target.value.split("\n") }))}
+                  placeholder="例：○○科技 人資處長（2015–2022）"
+                  className={inputCls + " resize-none"} />
+              </ProfileFormField>
+              <ProfileFormField label="證照與認證（一行一筆）">
+                <textarea rows={3} value={(profileForm.certifications ?? []).join("\n")}
+                  onChange={e => setProfileForm(f => ({ ...f, certifications: e.target.value.split("\n") }))}
+                  placeholder="例：ISO 9001 主導稽核員"
+                  className={inputCls + " resize-none"} />
+              </ProfileFormField>
+              <ProfileFormField label="主講課程（一行一筆）">
+                <textarea rows={3} value={(profileForm.courses ?? []).join("\n")}
+                  onChange={e => setProfileForm(f => ({ ...f, courses: e.target.value.split("\n") }))}
+                  placeholder="例：主管領導力實戰班"
                   className={inputCls + " resize-none"} />
               </ProfileFormField>
               <ProfileFormField label="諮詢說明（預約頁顯示）">
