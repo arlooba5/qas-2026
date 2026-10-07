@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2027 訓練需求調查表｜QAS 克斯</title>
+<!--
+================================================================
+ 2027 訓練需求調查表（合作單位承辦填寫）
+ 送出資料 → Apps Script 專案「2027 訓練需求調查收件」（arlooba5@gmail.com）
+          → Google 試算表「2027 訓練需求調查｜回覆」
+ 試算表：https://docs.google.com/spreadsheets/d/1XiK7RqhT7xs7Pza-OP92okVgi83-XnN1mEMJx-35YQ0/edit
+ 後台程式：https://script.google.com/home/projects/1HEPXc88PAaR_eYmquPA4NtMoB90PBDrQFf3drZ6iJC0qg38jkxJ-S-L0/edit
+ 若修改後台程式，需在 Apps Script「部署 → 管理部署作業」編輯並發布新版本，網址不變。
+================================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;800&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: single column survey — 說明 → 1 單位資料 → 2 服務對象 → 3 主題需求（八張主題卡）→ 4 辦理方式 → 5 其他 */
+:root{
+  --bg:#f3f5ee; --surface:#ffffff; --ink:#1d2a16; --muted:#5d6b55; --line:#d9dfcf;
+  --soil:#1a3a0f; --sprout:#4f7d1a; --sprout-soft:#e7f0d9; --danger:#b23a2a; --gold:#a8791f;
+  --display:"Noto Serif TC","Songti TC",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121810; --surface:#1a2217; --ink:#e6ecdf; --muted:#9fae96; --line:#2e3a28;
+  --soil:#cfe3b4; --sprout:#9cc75e; --sprout-soft:#24331b; --danger:#e8806f; --gold:#d9b05a; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7}
+.wrap{max-width:820px;margin:0 auto;padding:32px 16px 72px;display:flex;flex-direction:column;gap:24px}
+header{display:flex;flex-direction:column;gap:8px}
+.eyebrow{font-size:12px;letter-spacing:.14em;color:var(--sprout);font-weight:700}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,34px);line-height:1.3;margin:0;color:var(--soil);text-wrap:balance}
+.lead{color:var(--muted);margin:0;max-width:64ch}
+.facts{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0}
+.facts b{color:var(--soil);font-variant-numeric:tabular-nums}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px 20px;display:flex;flex-direction:column;gap:18px}
+h2{font-family:var(--display);font-weight:600;font-size:20px;margin:0;color:var(--soil);display:flex;gap:10px;align-items:baseline}
+h2 .no{font-family:var(--body);font-size:13px;font-weight:700;color:var(--bg);background:var(--soil);border-radius:4px;padding:0 7px}
+.sub{margin:-8px 0 0;color:var(--muted);font-size:14px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.lbl{font-weight:700;font-size:14px}
+.lbl .req{color:var(--danger);margin-left:2px}
+.lbl small{font-weight:400;color:var(--muted);margin-left:6px}
+input[type=text],input[type=tel],input[type=email],input[type=number],textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:100%}
+textarea{min-height:96px;resize:vertical}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,.chip input:focus-visible+span,.rate input:focus-visible+span{outline:2px solid var(--sprout);outline-offset:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:600px){.grid2{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative;cursor:pointer}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip span{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;background:var(--bg)}
+.chip input:checked+span{background:var(--soil);color:var(--bg);border-color:var(--soil)}
+.themes{display:flex;flex-direction:column;gap:14px}
+.theme{border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.theme-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.theme h3{margin:0;font-size:17px;color:var(--soil)}
+.theme .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.theme .eg{margin:0;font-size:13px;color:var(--muted)}
+.theme .eg b{color:var(--ink);font-weight:500}
+.rate{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.rate label{position:relative;cursor:pointer}
+.rate input{position:absolute;opacity:0;pointer-events:none}
+.rate span{display:block;text-align:center;border:1px solid var(--line);border-radius:6px;padding:5px 2px;font-size:13px;background:var(--surface)}
+.rate input:checked+span{background:var(--sprout);color:var(--bg);border-color:var(--sprout);font-weight:700}
+.theme .subs{display:none;flex-wrap:wrap;gap:6px}
+.theme.on .subs{display:flex}
+.theme .subs .chip span{font-size:13px;padding:2px 10px;background:var(--surface)}
+.top3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:600px){.top3{grid-template-columns:1fr}}
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:8px;padding:11px 26px;border:1px solid var(--soil);background:var(--soil);color:var(--bg);font-weight:700}
+button.ghost{background:transparent;color:var(--soil)}
+button:disabled{opacity:.5;cursor:wait}
+.msg{font-size:14px;margin:0}
+.msg.err{color:var(--danger)}
+.done{text-align:left}
+.done p{margin:0;color:var(--muted)}
+footer{font-size:13px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">QAS 克斯有限公司｜就業促進與銀髮課程</div>
+    <h1>2027 年度訓練需求調查表</h1>
+    <p class="lead">感謝貴單位長期合作。我們把 2026 年在各單位開過的課程整理成八大主題，請承辦夥伴依服務對象的需要勾選，作為 2027 年課程規劃與講師安排的依據。填寫約需 5 分鐘。</p>
+    <div class="facts"><span>2026 年已開課 <b>173</b> 場</span><span>合作講師近 <b>50</b> 位</span><span>課程主題 <b>8</b> 類</span></div>
+  </header>
+
+  <form id="f" novalidate>
+  <div style="display:flex;flex-direction:column;gap:24px">
+
+  <section>
+    <h2><span class="no">1</span>單位資料</h2>
+    <div class="grid2">
+      <div class="field"><label class="lbl" for="org">單位名稱<span class="req">*</span></label><input type="text" id="org" placeholder="例：沙鹿就業服務站"></div>
+      <div class="field"><label class="lbl" for="orgType">單位類型</label>
+        <select id="orgType"><option value="">請選擇</option><option>就業服務站</option><option>矯正機關（監所、戒治所）</option><option>銀髮人才服務據點</option><option>社福團體／協會</option><option>其他</option></select></div>
+      <div class="field"><label class="lbl" for="contact">承辦人姓名<span class="req">*</span></label><input type="text" id="contact"></div>
+      <div class="field"><label class="lbl" for="title">職稱</label><input type="text" id="title"></div>
+      <div class="field"><label class="lbl" for="phone">聯絡電話<span class="req">*</span></label><input type="tel" id="phone" placeholder="例：04-1234-5678 分機 123"></div>
+      <div class="field"><label class="lbl" for="email">Email</label><input type="email" id="email"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">2</span>服務對象</h2>
+    <div class="field"><span class="lbl">主要服務對象 <small>可複選</small></span><div class="chips" id="targets"></div></div>
+    <div class="field" style="max-width:280px"><label class="lbl" for="headcount">2027 年預估參訓人次</label><input type="number" id="headcount" min="0" inputmode="numeric" placeholder="例：120"></div>
+  </section>
+
+  <section>
+    <h2><span class="no">3</span>課程主題需求</h2>
+    <p class="sub">每個主題請選需要程度。選「非常需要」或「需要」後，可再勾選想加強的細項。</p>
+    <div class="themes" id="themes"></div>
+    <div class="field">
+      <span class="lbl">最優先的三個主題</span>
+      <div class="top3">
+        <select id="top1" aria-label="第一優先"></select>
+        <select id="top2" aria-label="第二優先"></select>
+        <select id="top3" aria-label="第三優先"></select>
+      </div>
+    </div>
+    <div class="field"><label class="lbl" for="otherTopic">上面沒有、但希望開設的主題</label><input type="text" id="otherTopic" placeholder="例：烘焙證照輔導、駕照考照準備"></div>
+  </section>
+
+  <section>
+    <h2><span class="no">4</span>辦理方式</h2>
+    <div class="field"><span class="lbl">單場時數 <small>可複選</small></span><div class="chips" id="hours"></div></div>
+    <div class="field"><span class="lbl">辦理形式 <small>可複選</small></span><div class="chips" id="formats"></div></div>
+    <div class="field"><span class="lbl">期望開課月份 <small>可複選</small></span><div class="chips" id="months"></div></div>
+    <div class="field"><span class="lbl">期望時段 <small>可複選</small></span><div class="chips" id="slots"></div></div>
+    <div class="grid2">
+      <div class="field"><label class="lbl" for="venue">上課地點</label>
+        <select id="venue"><option value="">請選擇</option><option>本單位場地</option><option>需由克斯協助安排場地</option><option>皆可</option></select></div>
+      <div class="field"><label class="lbl" for="phoneOk">學員上課時可使用手機上網嗎？ <small>影響 AI 課程設計</small></label>
+        <select id="phoneOk"><option value="">請選擇</option><option>可以</option><option>部分學員可以</option><option>不行（如矯正機關）</option></select></div>
+    </div>
+    <div class="field"><span class="lbl">場地現有設備 <small>可複選</small></span><div class="chips" id="equip"></div></div>
+  </section>
+
+  <section>
+    <h2><span class="no">5</span>其他建議</h2>
+    <div class="field"><label class="lbl" for="note">對課程、講師或行政安排的建議</label><textarea id="note" placeholder="例：學員識字程度較低，希望多用圖像與實作；希望同一講師能連續上 4 次。"></textarea></div>
+    <div class="actions"><button type="submit" id="submitBtn">送出調查表</button><p class="msg" id="msg" role="status"></p></div>
+  </section>
+
+  </div>
+  </form>
+
+  <section class="done" id="done" hidden>
+    <h2>已收到，謝謝您</h2>
+    <p id="doneText"></p>
+    <div class="actions"><button type="button" class="ghost" id="againBtn">替其他單位再填一份</button></div>
+  </section>
+
+  <footer>QAS 克斯有限公司｜台中市北屯區文心路四段955號17樓｜04-2243-3680｜LINE@ @713irmkk</footer>
+</div>
+
+<script>
+// Apps Script 網頁應用程式（專案「2027 訓練需求調查收件」，arlooba5@gmail.com）
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzdr6aUB38fs7UDMNR8GJ4XuwokUAh-hibfUKsq9AYbVv7yqI4mQ9beI2Jvrr9KFh4B/exec";
+
+// 依 2026 年已開課程（173 場）歸納的八大主題
+const THEMES = [
+  { k:"自我探索與職涯規劃", n:50, eg:"職涯再出發：重新看見你的工作優勢、九型人格懂自己、人生下半場職涯設計",
+    subs:["個人優勢與天賦盤點","人格特質分析（九型人格、十天干）","職涯方向與目標設定","中高齡職涯轉型・第二曲線","青少年職涯探索"] },
+  { k:"求職技巧與就業資源", n:24, eg:"就業準備與職場生存術、翻轉求職力：從職訓到面試、看懂就業趨勢（人資視角）",
+    subs:["履歷撰寫與面試演練","職業訓練與證照資源","就業市場趨勢與企業用人標準","出監・重返社會就業準備","銀髮再就業"] },
+  { k:"職場溝通與人際關係", n:19, eg:"不對抗也不壓抑：職場正向溝通、溫柔而堅定：女性的界線與自信溝通、團隊合作不卡關",
+    subs:["職場基本溝通與表達","衝突處理","團隊合作與人際關係","界線設定與自信溝通","職場倫理與信任重建"] },
+  { k:"情緒壓力與身心調適", n:20, eg:"壓力不壓抑、重回職場前的內在重建、從挫折到自我價值重建",
+    subs:["壓力辨識與釋放","情緒調節技巧","求職焦慮與自我懷疑","挫折復原與自我價值","身心能量管理"] },
+  { k:"勞動權益與防詐", n:13, eg:"懂權益，安心工作、工作須知：職場防詐、性騷擾與職場霸凌防治",
+    subs:["勞動權益與勞動契約","求職陷阱與詐騙辨識","性別平等與性騷擾防治","職場霸凌防治","法律風險與自我保護"] },
+  { k:"財務管理與微型創業", n:9, eg:"失業期的保障與現金流管理、遠離地下錢莊的財務選擇、微型創業的資金規劃",
+    subs:["失業・轉職期現金流管理","保險與風險防護","遠離地下錢莊與債務","微型創業資金與信用","創業思維與商業模式"] },
+  { k:"AI 與數位工具應用", n:24, eg:"AI 工具與職場應用實作、NotebookLM 自主學習、AI 識破詐騙、手機設定助己來",
+    subs:["AI 工具入門（Gemini、ChatGPT）","AI 提升工作效率與求職","自主學習（NotebookLM、線上課程）","手機基本設定與 LINE 操作","數位防詐","AI 生活應用（翻譯、行程、健康 APP）"] },
+  { k:"產業認識與職場參訪", n:14, eg:"短影音來了：從失業到接案、美業真實面、飯店・洗車場・殯葬業參訪",
+    subs:["短影音與社群行銷接案","服務業（飯店、美業、餐飲）","生產管理與製造業","運動健身產業","實地職場參訪"] }
+];
+const RATES = ["非常需要","需要","普通","不需要"];
+const OPTS = {
+  targets:["更生人","弱勢青少年","中高齡","銀髮（65 歲以上）","經濟弱勢","二度就業婦女","身心障礙","原住民","長期失業者","新住民","其他"],
+  hours:["2 小時","3 小時","6 小時（一日工作坊）","系列課程（4 次以上）"],
+  formats:["講座","互動工作坊","團體輔導","實作演練","職場參訪"],
+  months:Array.from({length:12},(_,i)=>`${i+1} 月`),
+  slots:["平日上午","平日下午","平日晚上","週末"],
+  equip:["投影機／螢幕","音響麥克風","網路 Wi-Fi","白板","可移動桌椅","電腦教室"]
+};
+
+const $ = id => document.getElementById(id);
+const chip = (name, v) => `<label class="chip"><input type="checkbox" name="${name}" value="${v}"><span>${v}</span></label>`;
+for (const [k, list] of Object.entries(OPTS)) $(k).innerHTML = list.map(v => chip(k, v)).join("");
+
+$("themes").innerHTML = THEMES.map((t, i) => `
+  <div class="theme" id="th${i}">
+    <div class="theme-head"><h3>${t.k}</h3><span class="count">2026 年開課 ${t.n} 場</span></div>
+    <p class="eg">開過的課程：<b>${t.eg}</b></p>
+    <div class="rate" role="radiogroup" aria-label="${t.k} 需要程度">
+      ${RATES.map(r => `<label><input type="radio" name="rate${i}" value="${r}"><span>${r}</span></label>`).join("")}
+    </div>
+    <div class="subs">${t.subs.map(s => chip("sub" + i, s)).join("")}</div>
+  </div>`).join("");
+document.addEventListener("change", e => {
+  const m = e.target.name && e.target.name.match(/^rate(\d+)$/);
+  if (m) $("th" + m[1]).classList.toggle("on", e.target.value === "非常需要" || e.target.value === "需要");
+});
+const topOpts = `<option value="">— 請選擇 —</option>` + THEMES.map(t => `<option>${t.k}</option>`).join("");
+["top1","top2","top3"].forEach((id, i) => { $(id).innerHTML = topOpts.replace("— 請選擇 —", `第 ${i + 1} 優先`); });
+
+const vals = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(i => i.value);
+const setMsg = (t, err) => { $("msg").textContent = t; $("msg").className = "msg" + (err ? " err" : ""); };
+
+$("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const d = {
+    org: $("org").value.trim(), orgType: $("orgType").value, contact: $("contact").value.trim(), title: $("title").value.trim(),
+    phone: $("phone").value.trim(), email: $("email").value.trim(), targets: vals("targets"), headcount: $("headcount").value,
+    ratings: {}, subs: {}, top: ["top1","top2","top3"].map(id => $(id).value).filter(Boolean),
+    otherTopic: $("otherTopic").value.trim(), hours: vals("hours"), formats: vals("formats"), months: vals("months"),
+    slots: vals("slots"), venue: $("venue").value, phoneOk: $("phoneOk").value, equip: vals("equip"), note: $("note").value.trim()
+  };
+  THEMES.forEach((t, i) => {
+    const r = document.querySelector(`input[name="rate${i}"]:checked`);
+    d.ratings[t.k] = r ? r.value : "";
+    d.subs[t.k] = r && (r.value === "非常需要" || r.value === "需要") ? vals("sub" + i) : [];
+  });
+  const miss = [];
+  if (!d.org) miss.push("單位名稱");
+  if (!d.contact) miss.push("承辦人姓名");
+  if (!d.phone) miss.push("聯絡電話");
+  if (miss.length) { setMsg("請填寫：" + miss.join("、"), true); $("org").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  if (new Set(d.top).size !== d.top.length) { setMsg("最優先的三個主題請選不同的主題。", true); return; }
+  if (!Object.values(d.ratings).some(Boolean)) { setMsg("請至少替一個主題選擇需要程度。", true); return; }
+  if (!GAS_URL) { setMsg("表單尚未設定送出網址，請聯絡克斯 04-2243-3680。", true); return; }
+
+  $("submitBtn").disabled = true; setMsg("送出中…");
+  try {
+    const res = await fetch(GAS_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
+    const r = await res.json();
+    if (!r.ok) throw new Error(r.error || "送出失敗");
+    $("doneText").textContent = `${d.org} 的訓練需求已送達克斯，我們會依調查結果與 ${d.contact} 聯繫 2027 年課程安排。`;
+    $("f").hidden = true; $("done").hidden = false; window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (err) {
+    setMsg("送出失敗：" + err.message + "，請稍後再試。", true);
+  } finally { $("submitBtn").disabled = false; }
+});
+$("againBtn").onclick = () => {
+  $("f").reset(); document.querySelectorAll(".theme.on").forEach(x => x.classList.remove("on"));
+  setMsg(""); $("done").hidden = true; $("f").hidden = false; window.scrollTo({ top: 0 });
+};
+</script>
+</body>
+</html>
