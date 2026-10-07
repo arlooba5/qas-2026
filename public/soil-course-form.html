@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>土壤計畫課程提案表｜QAS 克斯</title>
+<!--
+================================================================
+ 土壤計畫課程提案表（接官網 Firebase：qas-2026）
+ - 登入：官網會員帳號（Email／密碼，與 qas.com.tw 相同）
+ - 填寫資格：members/{uid}.role 為 instructor、consultant 或 admin
+ - 資料存放：Firestore 集合 courseProposals
+ - admin 登入後會多出「全部提案」：審核狀態、範疇篩選、匯出 CSV
+
+ ▼ 請到 Firebase Console → Firestore → 規則，在 match /databases/{database}/documents { … } 裡加上：
+
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'admin';
+    }
+    match /courseProposals/{id} {
+      allow read: if request.auth != null &&
+        (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.status == '待審';
+      allow update: if isAdmin() ||
+        (request.auth != null && resource.data.uid == request.auth.uid &&
+         resource.data.status != '採用' &&
+         request.resource.data.uid == resource.data.uid &&
+         request.resource.data.status == resource.data.status);
+      allow delete: if isAdmin() ||
+        (request.auth != null && resource.data.uid == request.auth.uid &&
+         resource.data.status != '採用');
+    }
+
+ （若規則裡已經有 isAdmin() 函式，就不用重複加。）
+================================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;800&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: single column — 規格條 → 登入 → 提案表單 → 我的提案 → (admin) 全部提案 */
+:root{
+  --bg:#f3f5ee; --surface:#ffffff; --ink:#1d2a16; --muted:#5d6b55; --line:#d9dfcf;
+  --soil:#1a3a0f; --sprout:#4f7d1a; --sprout-soft:#e7f0d9; --danger:#b23a2a;
+  --c1:#3d6b8c; --c2:#b0602a; --c3:#7a6a1e; --c4:#4f7d1a; --c5:#6a4c93;
+  --display:"Noto Serif TC","Songti TC",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --r:10px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121810; --surface:#1a2217; --ink:#e6ecdf; --muted:#9fae96; --line:#2e3a28;
+  --soil:#cfe3b4; --sprout:#9cc75e; --sprout-soft:#24331b; --danger:#e8806f;
+  --c1:#7fb1d4; --c2:#e39a63; --c3:#d2c06a; --c4:#9cc75e; --c5:#b59ae0; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7}
+.wrap{max-width:760px;margin:0 auto;padding:32px 16px 64px;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:6px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.eyebrow{font-size:12px;letter-spacing:.14em;color:var(--sprout);font-weight:700}
+.who{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,34px);line-height:1.3;margin:0;color:var(--soil);text-wrap:balance}
+h2{font-family:var(--display);font-weight:600;font-size:20px;margin:0;color:var(--soil)}
+.lead{color:var(--muted);margin:0;max-width:62ch}
+a{color:var(--sprout)}
+.spec{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0;font-size:14px}
+.spec b{color:var(--soil)}
+.spec .pill{background:var(--soil);color:var(--bg);border-radius:999px;padding:2px 12px;font-weight:700;font-size:13px}
+form,.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px 20px;display:flex;flex-direction:column;gap:22px}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lbl{font-weight:700;font-size:14px}
+.lbl small{font-weight:400;color:var(--muted);margin-left:6px}
+input[type=text],input[type=email],input[type=password],input[type=number],textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:170px;resize:vertical;line-height:1.75}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,.cat input:focus-visible+span{outline:2px solid var(--sprout);outline-offset:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.row2{grid-template-columns:1fr}}
+.counter{font-size:13px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.counter.over{color:var(--danger);font-weight:700}
+.price{display:flex;align-items:center;gap:8px}
+.price span{color:var(--muted);font-weight:700}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.cat{position:relative;cursor:pointer}
+.cat input{position:absolute;opacity:0;pointer-events:none}
+.cat span{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-left:4px solid var(--cc);border-radius:8px;padding:10px 12px;background:var(--bg);height:100%}
+.cat strong{color:var(--cc);font-size:15px}
+.cat em{font-style:normal;font-size:13px;color:var(--muted);line-height:1.5}
+.cat input:checked+span{background:var(--sprout-soft);border-color:var(--cc);box-shadow:0 0 0 1px var(--cc) inset}
+.hint{font-size:13px;color:var(--muted);background:var(--sprout-soft);border-radius:8px;padding:10px 12px;margin:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 18px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--soil);color:var(--bg);border-color:var(--soil);font-weight:700}
+button.link{border:none;background:none;padding:2px 6px;color:var(--sprout);font-size:13px}
+button.link.del{color:var(--danger)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.msg{font-size:14px;margin:0}
+.msg.err{color:var(--danger)} .msg.ok{color:var(--sprout);font-weight:700}
+.notice{border:1px dashed var(--line);border-radius:var(--r);padding:16px;color:var(--muted);font-size:14px;margin:0}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:14px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:none}
+.item h3{margin:0;font-size:16px;font-weight:700;min-width:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);align-items:center;grid-column:1/-1}
+.tag{border-radius:999px;padding:0 10px;font-size:12px;font-weight:700;border:1px solid var(--cc);color:var(--cc)}
+.status{border-radius:4px;padding:0 8px;font-size:12px;font-weight:700}
+.st-待審{background:var(--sprout-soft);color:var(--muted)}
+.st-採用{background:var(--sprout);color:var(--bg)}
+.st-退回{background:var(--danger);color:var(--bg)}
+.outline{grid-column:1/-1;font-size:14px;white-space:pre-wrap;margin:4px 0 0;min-width:0;overflow-wrap:anywhere}
+.ops{display:flex;gap:2px;align-items:start}
+.ops select{width:auto;padding:4px 8px;font-size:13px}
+.sum{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media (max-width:560px){.sum{grid-template-columns:repeat(3,1fr)}}
+.sum div{border-top:3px solid var(--cc);padding-top:6px;font-size:13px;color:var(--muted)}
+.sum b{display:block;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.toolbar select{width:auto}
+.num{font-variant-numeric:tabular-nums}
+footer{font-size:13px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="topline">
+      <div class="eyebrow">QAS 克斯｜土壤計畫</div>
+      <div class="who" id="who" hidden><span id="whoName"></span><button class="link" id="logoutBtn" type="button">登出</button></div>
+    </div>
+    <h1>土壤計畫課程提案表</h1>
+    <p class="lead">以成長意識為核心，從五大經營面向擇一切入，設計一堂六小時深度工作坊。範疇說明請參考<a href="https://www.qas.com.tw/soil-plan" target="_blank" rel="noopener">成長意識與五大面向</a>。</p>
+  </header>
+
+  <div class="spec">
+    <span class="pill">統一規格</span>
+    <span>形式 <b>深度工作坊</b></span>
+    <span>時數 <b class="num">6 小時</b></span>
+    <span>課程範疇 <b>五選一</b></span>
+  </div>
+
+  <p class="notice" id="loading">載入中…</p>
+
+  <!-- 登入 -->
+  <form id="loginForm" hidden novalidate>
+    <h2>講師登入</h2>
+    <p class="msg" style="color:var(--muted)">請使用克斯官網的會員帳號登入。還沒有帳號？先到 <a href="https://www.qas.com.tw/register" target="_blank" rel="noopener">官網註冊</a>，再到講師 LINE 群組告知，我們會為您開通講師權限。</p>
+    <div class="row2">
+      <div class="field"><label class="lbl" for="email">Email</label><input type="email" id="email" autocomplete="email"></div>
+      <div class="field"><label class="lbl" for="password">密碼</label><input type="password" id="password" autocomplete="current-password"></div>
+    </div>
+    <div class="actions"><button type="submit" class="primary" id="loginBtn">登入</button><p class="msg" id="loginMsg" role="status"></p></div>
+  </form>
+
+  <p class="notice" id="noRole" hidden></p>
+
+  <!-- 提案表單 -->
+  <form id="f" hidden novalidate>
+    <div class="row2">
+      <div class="field">
+        <label class="lbl" for="instructor">講師姓名</label>
+        <input type="text" id="instructor" maxlength="40" placeholder="例：王大明">
+      </div>
+      <div class="field">
+        <label class="lbl" for="price">建議售價 <small>每人，新台幣</small></label>
+        <div class="price"><span>NT$</span><input type="number" id="price" min="0" step="100" inputmode="numeric" placeholder="例：6000"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl" for="name">課程名稱</label>
+      <input type="text" id="name" maxlength="60" placeholder="例：看懂人的招募面談工作坊">
+    </div>
+
+    <div class="field">
+      <span class="lbl" id="catLbl">課程範疇 <small>土壤計畫五大面向，擇一</small></span>
+      <div class="cats" role="radiogroup" aria-labelledby="catLbl" id="cats"></div>
+    </div>
+
+    <div class="field">
+      <label class="lbl" for="outline">課程大綱 <small>300 字以內</small></label>
+      <p class="hint">設計提示：這堂課想讓學員在這個面向「動手做」什麼？又想在成長意識上留下什麼「看見」？</p>
+      <textarea id="outline" placeholder="建議包含：課程目標、六小時的單元安排、學員學完能做到什麼。"></textarea>
+      <div class="counter" id="counter">0 / 300 字</div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="primary" id="submitBtn">送出提案</button>
+      <button type="button" id="cancelBtn" hidden>取消編輯</button>
+      <p class="msg" id="msg" role="status"></p>
+    </div>
+  </form>
+
+  <section class="panel" id="minePanel" hidden>
+    <h2>我的提案</h2>
+    <div class="list" id="mine"></div>
+  </section>
+
+  <section class="panel" id="adminPanel" hidden>
+    <div class="toolbar">
+      <h2>全部提案 <small class="num" id="total" style="font-family:var(--body);font-size:14px;color:var(--muted)"></small></h2>
+      <div class="actions">
+        <label for="filter" class="lbl" style="font-weight:400">範疇</label>
+        <select id="filter"><option value="">全部</option></select>
+        <button type="button" id="csvBtn">下載 CSV</button>
+      </div>
+    </div>
+    <div class="sum" id="sum"></div>
+    <p class="msg err" id="adminMsg" role="status"></p>
+    <div class="list" id="all"></div>
+  </section>
+
+  <footer>QAS 克斯有限公司｜台中市北屯區文心路四段955號17樓｜LINE@ @713irmkk</footer>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+// 與官網 src/lib/firebase.ts 相同設定
+const app = initializeApp({
+  apiKey: "AIzaSyCPo-k65Z1Rj4_WrWSgHUtl-8gXUP8u0Jk",
+  authDomain: "qas-2026.firebaseapp.com",
+  projectId: "qas-2026",
+  storageBucket: "qas-2026.firebasestorage.app",
+  messagingSenderId: "536015498250",
+  appId: "1:536015498250:web:013e243fd9880ab71243f3"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const COL = "courseProposals";
+const ALLOWED_ROLES = ["instructor", "consultant", "admin"];
+const FORMAT = "深度工作坊", HOURS = 6, LIMIT = 300;
+const CATS = [
+  {k:"用人意識", en:"People", q:"我真的看懂眼前這個人嗎？", c:"--c1"},
+  {k:"行銷意識", en:"Marketing", q:"客戶為什麼要選我，而不是別人？", c:"--c2"},
+  {k:"財務意識", en:"Financial", q:"這個決定，錢會怎麼流動？", c:"--c3"},
+  {k:"團隊意識", en:"Team", q:"我們是一群人在做事，還是一個團隊？", c:"--c4"},
+  {k:"數位創新意識", en:"Digital Innovation", q:"這件事，有沒有更聰明的做法？", c:"--c5"}
+];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const len = s => [...String(s).replace(/\s/g, "")].length;
+const fmt = n => "NT$ " + Number(n || 0).toLocaleString("zh-TW");
+const ms = t => t && t.toMillis ? t.toMillis() : 0;
+const day = t => t && t.toDate ? t.toDate().toLocaleDateString("zh-TW") : "";
+const colorOf = k => { const c = CATS.find(x => x.k === k); return c ? `var(${c.c})` : "var(--muted)"; };
+
+$("cats").innerHTML = CATS.map((c, i) =>
+  `<label class="cat" style="--cc:var(${c.c})"><input type="radio" name="cat" id="cat${i}" value="${c.k}"><span><strong>${c.k}</strong><em>${c.en}・${c.q}</em></span></label>`).join("");
+$("filter").innerHTML += CATS.map(c => `<option value="${c.k}">${c.k}</option>`).join("");
+
+const outline = $("outline");
+function updCount() {
+  const n = len(outline.value);
+  $("counter").textContent = `${n} / ${LIMIT} 字`;
+  $("counter").classList.toggle("over", n > LIMIT);
+}
+outline.addEventListener("input", updCount);
+const setMsg = (t, k) => { $("msg").textContent = t; $("msg").className = "msg " + (k || ""); };
+
+let user = null, member = null, mine = [], all = [], editing = null, unsubs = [];
+
+function show(state) {
+  $("loading").hidden = true;
+  $("loginForm").hidden = state !== "login";
+  $("noRole").hidden = state !== "norole";
+  $("f").hidden = $("minePanel").hidden = state !== "ok";
+  $("who").hidden = state === "login";
+  if (state !== "ok") $("adminPanel").hidden = true;
+}
+
+/* ---------- 登入 ---------- */
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const m = $("loginMsg");
+  $("loginBtn").disabled = true; m.className = "msg"; m.textContent = "登入中…";
+  try {
+    await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+    m.textContent = "";
+  } catch (err) {
+    m.className = "msg err";
+    m.textContent = ["auth/invalid-credential","auth/wrong-password","auth/user-not-found","auth/invalid-email"].includes(err.code)
+      ? "Email 或密碼不正確，請再確認。" : "登入失敗，請稍後再試。";
+  } finally { $("loginBtn").disabled = false; }
+});
+$("logoutBtn").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async u => {
+  unsubs.forEach(f => f()); unsubs = []; mine = []; all = []; resetForm();
+  user = u; member = null;
+  if (!u) { show("login"); return; }
+  try {
+    const snap = await getDoc(doc(db, "members", u.uid));
+    member = snap.exists() ? snap.data() : {};
+  } catch { member = {}; }
+  $("whoName").textContent = (member.name || u.email) + (member.role === "admin" ? "（管理者）" : "");
+  if (!ALLOWED_ROLES.includes(member.role)) {
+    $("noRole").textContent = "您的帳號尚未開通講師權限。請到講師 LINE 群組留言：「已完成註冊，註冊 Email：" + (u.email || "") + "」，開通後重新整理此頁即可填寫。";
+    show("norole"); return;
+  }
+  if (member.name && !$("instructor").value) $("instructor").value = member.name;
+  show("ok");
+  subscribeMine();
+  if (member.role === "admin") { $("adminPanel").hidden = false; subscribeAll(); }
+});
+
+/* ---------- 資料 ---------- */
+function subscribeMine() {
+  unsubs.push(onSnapshot(query(collection(db, COL), where("uid", "==", user.uid)),
+    s => { mine = s.docs.map(d => ({ id: d.id, ...d.data() })); renderMine(); },
+    () => { $("mine").innerHTML = `<p class="notice">讀取提案失敗：請確認 Firestore 規則已加入 courseProposals 設定。</p>`; }));
+}
+function subscribeAll() {
+  unsubs.push(onSnapshot(collection(db, COL),
+    s => { all = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); },
+    () => { $("adminMsg").textContent = "讀取全部提案失敗：請確認 Firestore 規則已加入 courseProposals 設定。"; }));
+}
+
+function itemHTML(p, { own, admin }) {
+  const st = p.status || "待審";
+  return `<article class="item" style="--cc:${colorOf(p.category)}">
+    <h3>${esc(p.name)}</h3>
+    <div class="ops">
+      ${own && st !== "採用" ? `<button class="link" data-edit="${p.id}">修改</button><button class="link del" data-del="${p.id}">刪除</button>` : ""}
+      ${admin ? `<select aria-label="審核狀態" data-st="${p.id}">${["待審","採用","退回"].map(s => `<option${s === st ? " selected" : ""}>${s}</option>`).join("")}</select>` : ""}
+    </div>
+    <div class="meta"><span class="tag">${esc(p.category)}</span><span class="status st-${esc(st)}">${esc(st)}</span>
+      <span>${esc(p.instructor)}</span>${admin && p.email ? `<span>${esc(p.email)}</span>` : ""}
+      <span class="num">${fmt(p.price)}</span><span>${FORMAT}・${HOURS} 小時</span><span>${day(p.updatedAt)}</span></div>
+    <p class="outline">${esc(p.outline)}</p></article>`;
+}
+function renderMine() {
+  $("mine").innerHTML = mine.length
+    ? [...mine].sort((a, b) => ms(b.updatedAt) - ms(a.updatedAt)).map(p => itemHTML(p, { own: true })).join("")
+    : `<p class="notice">尚未送出任何提案。填好上方表單按「送出提案」，提案就會出現在這裡。</p>`;
+}
+function renderAll() {
+  const f = $("filter").value;
+  const rows = all.filter(p => !f || p.category === f).sort((a, b) => ms(b.updatedAt) - ms(a.updatedAt));
+  $("total").textContent = `共 ${all.length} 件`;
+  $("sum").innerHTML = CATS.map(c => `<div style="--cc:var(${c.c})"><b>${all.filter(p => p.category === c.k).length}</b>${c.k}</div>`).join("");
+  $("all").innerHTML = rows.length ? rows.map(p => itemHTML(p, { admin: true })).join("")
+    : `<p class="notice">${all.length ? "這個範疇目前沒有提案。" : "還沒有講師送出提案。"}</p>`;
+}
+$("filter").onchange = renderAll;
+
+/* ---------- 送出／修改 ---------- */
+function resetForm() {
+  const keep = $("instructor").value;
+  $("f").reset(); $("instructor").value = keep;
+  editing = null; $("submitBtn").textContent = "送出提案"; $("cancelBtn").hidden = true; updCount();
+}
+$("cancelBtn").onclick = () => { resetForm(); setMsg(""); };
+
+$("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const v = {
+    instructor: $("instructor").value.trim(),
+    name: $("name").value.trim(),
+    category: (document.querySelector("input[name=cat]:checked") || {}).value || "",
+    outline: outline.value.trim(),
+    price: Number($("price").value)
+  };
+  const miss = [];
+  if (!v.instructor) miss.push("講師姓名");
+  if (!v.name) miss.push("課程名稱");
+  if (!v.category) miss.push("課程範疇");
+  if (!v.outline) miss.push("課程大綱");
+  if (!(v.price > 0)) miss.push("建議售價");
+  if (miss.length) { setMsg("請填寫：" + miss.join("、"), "err"); return; }
+  if (len(v.outline) > LIMIT) { setMsg(`課程大綱目前 ${len(v.outline)} 字，請精簡到 ${LIMIT} 字以內。`, "err"); return; }
+
+  $("submitBtn").disabled = true;
+  try {
+    if (editing) {
+      await updateDoc(doc(db, COL, editing), { ...v, outlineLength: len(v.outline), updatedAt: serverTimestamp() });
+      setMsg("已更新提案", "ok");
+    } else {
+      await addDoc(collection(db, COL), {
+        ...v, outlineLength: len(v.outline), format: FORMAT, hours: HOURS, status: "待審",
+        uid: user.uid, email: user.email || "", createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      });
+      setMsg("已送出提案", "ok");
+    }
+    resetForm();
+  } catch (err) {
+    setMsg(err.code === "permission-denied" ? "沒有寫入權限：請聯絡克斯確認帳號權限。" : "送出失敗，請稍後再試。", "err");
+  } finally { $("submitBtn").disabled = false; }
+});
+
+/* ---------- 列表操作 ---------- */
+document.addEventListener("click", async e => {
+  const ed = e.target.closest("[data-edit]"), dl = e.target.closest("[data-del]");
+  if (ed) {
+    const p = mine.find(x => x.id === ed.dataset.edit); if (!p) return;
+    editing = p.id;
+    $("instructor").value = p.instructor; $("name").value = p.name; $("price").value = p.price; outline.value = p.outline;
+    const r = [...document.querySelectorAll("input[name=cat]")].find(i => i.value === p.category); if (r) r.checked = true;
+    updCount(); $("submitBtn").textContent = "儲存修改"; $("cancelBtn").hidden = false;
+    setMsg("正在編輯：" + p.name); $("f").scrollIntoView({ behavior: "smooth" });
+  }
+  if (dl) {
+    if (dl.dataset.confirm !== "1") {
+      dl.dataset.confirm = "1"; dl.textContent = "確定刪除？";
+      setTimeout(() => { dl.dataset.confirm = ""; dl.textContent = "刪除"; }, 4000); return;
+    }
+    try { await deleteDoc(doc(db, COL, dl.dataset.del)); if (editing === dl.dataset.del) resetForm(); }
+    catch { setMsg("刪除失敗，請稍後再試。", "err"); }
+  }
+});
+document.addEventListener("change", async e => {
+  const s = e.target.closest("[data-st]"); if (!s) return;
+  try { await updateDoc(doc(db, COL, s.dataset.st), { status: s.value, reviewedAt: serverTimestamp() }); $("adminMsg").textContent = ""; }
+  catch { $("adminMsg").textContent = "狀態更新失敗，請確認 Firestore 規則。"; }
+});
+
+/* ---------- 匯出 CSV（Excel 可直接開啟） ---------- */
+$("csvBtn").onclick = () => {
+  const head = ["講師姓名","Email","課程名稱","課程範疇","課程大綱","大綱字數","建議售價","形式","時數","狀態","送出日期","更新日期"];
+  const q = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
+  const rows = all.map(p => [p.instructor, p.email, p.name, p.category, p.outline, p.outlineLength ?? len(p.outline || ""), p.price,
+    FORMAT, HOURS, p.status || "待審", day(p.createdAt), day(p.updatedAt)].map(q).join(","));
+  const blob = new Blob(["﻿" + [head.join(","), ...rows].join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `土壤計畫課程提案_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+</script>
+</body>
+</html>
