@@ -63,7 +63,11 @@ interface Order {
   date?: string; time?: string; status?: string; fee?: number; createdAt?: Timestamp;
 }
 
-type TabType = "overview" | "slots" | "orders" | "profile";
+type TabType = "overview" | "slots" | "orders" | "proposals" | "profile";
+
+// 土壤計畫課程提案：寫入 Google 試算表（透過 Apps Script，FormData 避免 CORS）
+// 試算表：https://docs.google.com/spreadsheets/d/1AFNgSFS4c6Dc1mt3NIOwIeF2s6-EfRFgYI3s-lN9P7w/edit
+// 欄位：講師姓名、課程名稱、課程大綱、說明、UID
 
 const EMPTY_PROFILE: Omit<ConsultantProfile, "id"> = {
   name: "", title: "", description: "", tags: [],
@@ -84,6 +88,11 @@ export default function ConsultantPortalPage() {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [orders, setOrders]         = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+
+  // 課程提案
+  const [proposalForm, setProposalForm] = useState({ name: "", outline: "", note: "" });
+  const [proposalSaving, setProposalSaving] = useState(false);
+  const [proposalMsg, setProposalMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   // 個人資料
   const [profile, setProfile]         = useState<ConsultantProfile | null>(null);
@@ -238,6 +247,39 @@ export default function ConsultantPortalPage() {
     }
   };
 
+  // ── 送出課程提案（寫入 Google 試算表）───────────────────────────────────
+  const submitProposal = async () => {
+    if (!proposalForm.name.trim() || !proposalForm.outline.trim()) {
+      setProposalMsg({ type: "err", text: "請填寫課程名稱與課程大綱" });
+      return;
+    }
+    setProposalSaving(true);
+    setProposalMsg(null);
+    try {
+      const form = new FormData();
+      form.append("payload", JSON.stringify({
+        action: "submitCourseProposal",
+        instructor: member?.name || "",
+        name: proposalForm.name.trim(),
+        outline: proposalForm.outline.trim(),
+        note: proposalForm.note.trim(),
+        uid: member?.uid || "",
+      }));
+      const resp = await fetch(APPS_SCRIPT_URL, { method: "POST", body: form });
+      const result = await resp.json();
+      if (result.success) {
+        setProposalForm({ name: "", outline: "", note: "" });
+        setProposalMsg({ type: "ok", text: "✅ 已送出提案，謝謝！" });
+      } else {
+        throw new Error(result.error ?? "送出失敗");
+      }
+    } catch {
+      setProposalMsg({ type: "err", text: "❌ 送出失敗，請稍後再試。" });
+    } finally {
+      setProposalSaving(false);
+    }
+  };
+
   // ── 儲存個人資料 ──────────────────────────────────────────────────────────
   const saveProfile = async () => {
     if (!member?.consultantId) return;
@@ -352,6 +394,7 @@ export default function ConsultantPortalPage() {
             { key: "overview", label: "📊 總覽" },
             { key: "slots",    label: "🗓 諮詢時段" },
             { key: "orders",   label: "📋 預約訂單" },
+            { key: "proposals", label: "🌱 課程提案" },
             { key: "profile",  label: "👤 個人資料" },
           ] as { key: TabType; label: string }[]).map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
@@ -478,6 +521,51 @@ export default function ConsultantPortalPage() {
                   ))}
                 </div>
             }
+          </div>
+        )}
+
+        {/* ── 課程提案 ── */}
+        {activeTab === "proposals" && (
+          <div className="space-y-5">
+            <div>
+              <h2 className="text-white text-xl font-bold">土壤計畫課程提案</h2>
+              <p className="text-[#639922] text-sm mt-1">
+                送出課程名稱與大綱，我們會盡快與您聯繫討論細節。
+              </p>
+            </div>
+
+            <div className="bg-[#1a3a0f] rounded-xl p-5 border border-[#3B6D11] space-y-4">
+              <ProfileFormField label="課程名稱 *">
+                <input type="text" value={proposalForm.name}
+                  onChange={e => setProposalForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="例：看懂人的招募面談工作坊" className={inputCls} />
+              </ProfileFormField>
+              <ProfileFormField label="課程大綱 *">
+                <textarea rows={6} value={proposalForm.outline}
+                  onChange={e => setProposalForm(f => ({ ...f, outline: e.target.value }))}
+                  placeholder="建議包含：課程目標、單元安排、學員學完能做到什麼。"
+                  className={inputCls + " resize-none"} />
+              </ProfileFormField>
+              <ProfileFormField label="說明（選填）">
+                <textarea rows={2} value={proposalForm.note}
+                  onChange={e => setProposalForm(f => ({ ...f, note: e.target.value }))}
+                  placeholder="其他想補充的事項"
+                  className={inputCls + " resize-none"} />
+              </ProfileFormField>
+
+              {proposalMsg && (
+                <div className={`rounded-lg px-4 py-3 text-sm ${
+                  proposalMsg.type === "ok"
+                    ? "bg-green-900/30 border border-green-700 text-green-400"
+                    : "bg-red-900/30 border border-red-800 text-red-400"}`}>
+                  {proposalMsg.text}
+                </div>
+              )}
+              <button onClick={submitProposal} disabled={proposalSaving}
+                className="w-full bg-[#639922] hover:bg-[#3B6D11] disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors">
+                {proposalSaving ? "送出中..." : "送出提案"}
+              </button>
+            </div>
           </div>
         )}
 
