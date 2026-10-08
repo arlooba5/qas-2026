@@ -26,6 +26,8 @@ const db   = getFirestore(app);
 
 // Apps Script 網址（含 uploadImageToGitHub action）
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwK93lH6ImhVFAKcKeMVHL2zdGoS3ndzlVd5_iU2Au6f9usaL_N1qayDMIH5Q_6dcpE/exec";
+// 土壤計畫課程提案：寫入 Google 試算表 https://docs.google.com/spreadsheets/d/1AFNgSFS4c6Dc1mt3NIOwIeF2s6-EfRFgYI3s-lN9P7w/edit
+const COURSE_PROPOSAL_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYUR_v7ptXmBP0UgHFqL8-WFloa0QCwqStuj3J3u9H7FxJx60FDhPSC9yLdSA_erDi_A/exec";
 
 // ─── 型別 ────────────────────────────────────────────────────────────────────
 interface MemberData {
@@ -265,7 +267,7 @@ export default function ConsultantPortalPage() {
         note: proposalForm.note.trim(),
         uid: member?.uid || "",
       }));
-      const resp = await fetch(APPS_SCRIPT_URL, { method: "POST", body: form });
+      const resp = await fetch(COURSE_PROPOSAL_APPS_SCRIPT_URL, { method: "POST", body: form });
       const result = await resp.json();
       if (result.success) {
         setProposalForm({ name: "", outline: "", note: "" });
