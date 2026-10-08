@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;800&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
-/* Layout: single column survey — 說明 → 1 單位資料 → 2 服務對象 → 3 主題需求（八張主題卡）→ 4 辦理方式 → 5 其他 */
+/* Layout: single column survey — 說明 → 1 單位資料 → 2 服務對象 → 3 主題需求（八張主題卡）→ 4 辦理方式 → 5 預計場次（依場次數動態產生列）→ 6 其他 */
 :root{
   --bg:#f3f5ee; --surface:#ffffff; --ink:#1d2a16; --muted:#5d6b55; --line:#d9dfcf;
   --soil:#1a3a0f; --sprout:#4f7d1a; --sprout-soft:#e7f0d9; --danger:#b23a2a; --gold:#a8791f;
@@ -72,6 +72,21 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 .theme .subs .chip span{font-size:13px;padding:2px 10px;background:var(--surface)}
 .top3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 @media (max-width:600px){.top3{grid-template-columns:1fr}}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{padding:6px 0;width:40px;font-size:18px;line-height:1}
+.stepper input{width:80px;text-align:center;font-variant-numeric:tabular-nums}
+.stepper .unit{color:var(--muted);font-size:14px}
+.sessions{display:flex;flex-direction:column;gap:12px}
+.sess{border:1px solid var(--line);border-left:4px solid var(--sprout);border-radius:10px;padding:14px 16px;background:var(--bg);display:grid;grid-template-columns:repeat(8,1fr);gap:10px 12px}
+.sess .no{grid-column:1/-1;font-weight:700;color:var(--soil);font-size:15px;display:flex;justify-content:space-between;align-items:center}
+.sess .f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sess .f span{font-size:12px;color:var(--muted)}
+.sess .f-theme{grid-column:span 4}.sess .f-date{grid-column:span 4}
+.sess .f-start,.sess .f-end{grid-column:span 2}.sess .f-place{grid-column:span 3}.sess .f-people{grid-column:span 1}
+.sess input,.sess select{padding:7px 10px;background:var(--surface)}
+input[type=date],input[type=time]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%}
+@media (max-width:600px){.sess{grid-template-columns:1fr 1fr}.sess .f-theme,.sess .f-date,.sess .f-place{grid-column:1/-1}.sess .f-start,.sess .f-end,.sess .f-people{grid-column:span 1}}
+.copyall{align-self:flex-start;padding:7px 14px;font-size:13px;font-weight:500}
 .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 button{font:inherit;cursor:pointer;border-radius:8px;padding:11px 26px;border:1px solid var(--soil);background:var(--soil);color:var(--bg);font-weight:700}
 button.ghost{background:transparent;color:var(--soil)}
@@ -145,7 +160,23 @@ footer{font-size:13px;color:var(--muted);text-align:center}
   </section>
 
   <section>
-    <h2><span class="no">5</span>其他建議</h2>
+    <h2><span class="no">5</span>預計開課場次</h2>
+    <p class="sub">請先選預計的場次數，下方會出現對應的場次列。日期、時間尚未確定可以先空著，之後我們會再與您確認。</p>
+    <div class="field">
+      <label class="lbl" for="sessCount">預計場次數</label>
+      <div class="stepper">
+        <button type="button" class="ghost" id="sessMinus" aria-label="減少一場">−</button>
+        <input type="number" id="sessCount" min="0" max="30" value="0" inputmode="numeric">
+        <button type="button" class="ghost" id="sessPlus" aria-label="增加一場">＋</button>
+        <span class="unit">場（最多 30 場）</span>
+      </div>
+    </div>
+    <div class="sessions" id="sessions"></div>
+    <button type="button" class="ghost copyall" id="copyAll" hidden>把第 1 場的時間、地點、人數套用到其他場次</button>
+  </section>
+
+  <section>
+    <h2><span class="no">6</span>其他建議</h2>
     <div class="field"><label class="lbl" for="note">對課程、講師或行政安排的建議</label><textarea id="note" placeholder="例：學員識字程度較低，希望多用圖像與實作；希望同一講師能連續上 4 次。"></textarea></div>
     <div class="actions"><button type="submit" id="submitBtn">送出調查表</button><p class="msg" id="msg" role="status"></p></div>
   </section>
@@ -215,6 +246,56 @@ document.addEventListener("change", e => {
 const topOpts = `<option value="">— 請選擇 —</option>` + THEMES.map(t => `<option>${t.k}</option>`).join("");
 ["top1","top2","top3"].forEach((id, i) => { $(id).innerHTML = topOpts.replace("— 請選擇 —", `第 ${i + 1} 優先`); });
 
+// ---------- 預計場次 ----------
+const MAX_SESS = 30;
+let sessData = [];
+const sessFields = ["theme","date","start","end","place","people"];
+function readSessions() {
+  document.querySelectorAll(".sess").forEach((row, i) => {
+    sessData[i] = {};
+    sessFields.forEach(k => { sessData[i][k] = row.querySelector(`[data-k="${k}"]`).value; });
+  });
+}
+function renderSessions(n) {
+  readSessions();
+  const themeOpts = `<option value="">請選擇主題</option>` + THEMES.map(t => `<option>${t.k}</option>`).join("") + `<option>其他（請寫在建議欄）</option>`;
+  $("sessions").innerHTML = Array.from({ length: n }, (_, i) => `
+    <div class="sess">
+      <div class="no">第 ${i + 1} 場</div>
+      <label class="f f-theme"><span>課程主題</span><select data-k="theme" id="s${i}theme">${themeOpts}</select></label>
+      <label class="f f-date"><span>日期</span><input type="date" data-k="date" id="s${i}date" min="2027-01-01" max="2027-12-31"></label>
+      <label class="f f-start"><span>開始</span><input type="time" data-k="start" id="s${i}start" step="600"></label>
+      <label class="f f-end"><span>結束</span><input type="time" data-k="end" id="s${i}end" step="600"></label>
+      <label class="f f-place"><span>地點</span><input type="text" data-k="place" id="s${i}place" placeholder="例：本站二樓教室"></label>
+      <label class="f f-people"><span>預計人數</span><input type="number" data-k="people" id="s${i}people" min="0" inputmode="numeric" placeholder="20"></label>
+    </div>`).join("");
+  document.querySelectorAll(".sess").forEach((row, i) => {
+    const v = sessData[i] || {};
+    sessFields.forEach(k => { if (v[k]) row.querySelector(`[data-k="${k}"]`).value = v[k]; });
+  });
+  $("copyAll").hidden = n < 2;
+}
+function setSessCount(n) {
+  n = Math.max(0, Math.min(MAX_SESS, parseInt(n, 10) || 0));
+  $("sessCount").value = n;
+  renderSessions(n);
+}
+$("sessMinus").onclick = () => setSessCount(+$("sessCount").value - 1);
+$("sessPlus").onclick = () => setSessCount(+$("sessCount").value + 1);
+$("sessCount").addEventListener("change", e => setSessCount(e.target.value));
+$("copyAll").onclick = () => {
+  readSessions();
+  const first = sessData[0] || {};
+  document.querySelectorAll(".sess").forEach((row, i) => {
+    if (i === 0) return;
+    ["start","end","place","people"].forEach(k => { if (first[k]) row.querySelector(`[data-k="${k}"]`).value = first[k]; });
+  });
+};
+function collectSessions() {
+  readSessions();
+  return sessData.slice(0, +$("sessCount").value).map((v, i) => ({ no: i + 1, ...v }));
+}
+
 const vals = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(i => i.value);
 const setMsg = (t, err) => { $("msg").textContent = t; $("msg").className = "msg" + (err ? " err" : ""); };
 
@@ -225,7 +306,8 @@ $("f").addEventListener("submit", async e => {
     phone: $("phone").value.trim(), email: $("email").value.trim(), targets: vals("targets"), headcount: $("headcount").value,
     ratings: {}, subs: {}, top: ["top1","top2","top3"].map(id => $(id).value).filter(Boolean),
     otherTopic: $("otherTopic").value.trim(), hours: vals("hours"), formats: vals("formats"), months: vals("months"),
-    slots: vals("slots"), venue: $("venue").value, phoneOk: $("phoneOk").value, equip: vals("equip"), note: $("note").value.trim()
+    slots: vals("slots"), venue: $("venue").value, phoneOk: $("phoneOk").value, equip: vals("equip"), note: $("note").value.trim(),
+    sessions: collectSessions()
   };
   THEMES.forEach((t, i) => {
     const r = document.querySelector(`input[name="rate${i}"]:checked`);
@@ -239,6 +321,8 @@ $("f").addEventListener("submit", async e => {
   if (miss.length) { setMsg("請填寫：" + miss.join("、"), true); $("org").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
   if (new Set(d.top).size !== d.top.length) { setMsg("最優先的三個主題請選不同的主題。", true); return; }
   if (!Object.values(d.ratings).some(Boolean)) { setMsg("請至少替一個主題選擇需要程度。", true); return; }
+  const badTime = d.sessions.find(x => x.start && x.end && x.end <= x.start);
+  if (badTime) { setMsg(`第 ${badTime.no} 場的結束時間要晚於開始時間。`, true); $(`s${badTime.no - 1}end`).focus(); return; }
   if (!GAS_URL) { setMsg("表單尚未設定送出網址，請聯絡克斯 04-2243-3680。", true); return; }
 
   $("submitBtn").disabled = true; setMsg("送出中…");
@@ -246,7 +330,7 @@ $("f").addEventListener("submit", async e => {
     const res = await fetch(GAS_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
     const r = await res.json();
     if (!r.ok) throw new Error(r.error || "送出失敗");
-    $("doneText").textContent = `${d.org} 的訓練需求已送達克斯，我們會依調查結果與 ${d.contact} 聯繫 2027 年課程安排。`;
+    $("doneText").textContent = `${d.org} 的訓練需求${d.sessions.length ? `與 ${d.sessions.length} 場預計場次` : ""}已送達克斯，我們會依調查結果與 ${d.contact} 聯繫 2027 年課程安排。`;
     $("f").hidden = true; $("done").hidden = false; window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (err) {
     setMsg("送出失敗：" + err.message + "，請稍後再試。", true);
@@ -254,6 +338,7 @@ $("f").addEventListener("submit", async e => {
 });
 $("againBtn").onclick = () => {
   $("f").reset(); document.querySelectorAll(".theme.on").forEach(x => x.classList.remove("on"));
+  sessData = []; $("sessions").innerHTML = ""; setSessCount(0);
   setMsg(""); $("done").hidden = true; $("f").hidden = false; window.scrollTo({ top: 0 });
 };
 </script>
