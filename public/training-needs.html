@@ -258,7 +258,7 @@ function readSessions() {
 }
 function renderSessions(n) {
   readSessions();
-  const themeOpts = `<option value="">請選擇主題</option>` + THEMES.map(t => `<option>${t.k}</option>`).join("") + `<option>其他（請寫在建議欄）</option>`;
+  const themeOpts = `<option value="">請選擇主題</option>` + THEMES.map(t => `<option>${t.k}</option>`).join("") + `<option>由承辦單位安排</option><option>其他（請寫在建議欄）</option>`;
   $("sessions").innerHTML = Array.from({ length: n }, (_, i) => `
     <div class="sess">
       <div class="no">第 ${i + 1} 場</div>
