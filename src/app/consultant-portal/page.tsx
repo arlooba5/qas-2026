@@ -29,6 +29,20 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwK93lH6ImhVFAK
 // 土壤計畫課程提案：寫入 Google 試算表 https://docs.google.com/spreadsheets/d/1AFNgSFS4c6Dc1mt3NIOwIeF2s6-EfRFgYI3s-lN9P7w/edit
 const COURSE_PROPOSAL_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYUR_v7ptXmBP0UgHFqL8-WFloa0QCwqStuj3J3u9H7FxJx60FDhPSC9yLdSA_erDi_A/exec";
 
+// 土壤計畫課程提案：統一規格與五大面向（與提案表 artifact 一致）
+const PROPOSAL_FORMAT = "深度工作坊";
+const PROPOSAL_HOURS = 6;
+const PROPOSAL_OUTLINE_LIMIT = 300;
+const PROPOSAL_CATEGORIES = [
+  { key: "用人意識", en: "People", q: "我真的看懂眼前這個人嗎？" },
+  { key: "行銷意識", en: "Marketing", q: "客戶為什麼要選我，而不是別人？" },
+  { key: "財務意識", en: "Financial", q: "這個決定，錢會怎麼流動？" },
+  { key: "團隊意識", en: "Team", q: "我們是一群人在做事，還是一個團隊？" },
+  { key: "數位創新意識", en: "Digital Innovation", q: "這件事，有沒有更聰明的做法？" },
+] as const;
+const countChars = (s: string) => [...s.replace(/\s/g, "")].length;
+const EMPTY_PROPOSAL = { name: "", category: "", price: "", outline: "", note: "" };
+
 // ─── 型別 ────────────────────────────────────────────────────────────────────
 interface MemberData {
   uid: string; name: string; email: string; phone?: string;
@@ -92,7 +106,7 @@ export default function ConsultantPortalPage() {
   const [ordersLoading, setOrdersLoading] = useState(false);
 
   // 課程提案
-  const [proposalForm, setProposalForm] = useState({ name: "", outline: "", note: "" });
+  const [proposalForm, setProposalForm] = useState(EMPTY_PROPOSAL);
   const [proposalSaving, setProposalSaving] = useState(false);
   const [proposalMsg, setProposalMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -251,8 +265,19 @@ export default function ConsultantPortalPage() {
 
   // ── 送出課程提案（寫入 Google 試算表）───────────────────────────────────
   const submitProposal = async () => {
-    if (!proposalForm.name.trim() || !proposalForm.outline.trim()) {
-      setProposalMsg({ type: "err", text: "請填寫課程名稱與課程大綱" });
+    const price = Number(proposalForm.price);
+    const missing: string[] = [];
+    if (!proposalForm.name.trim()) missing.push("課程名稱");
+    if (!proposalForm.category) missing.push("課程範疇");
+    if (!(price > 0)) missing.push("建議售價");
+    if (!proposalForm.outline.trim()) missing.push("課程大綱");
+    if (missing.length) {
+      setProposalMsg({ type: "err", text: "請填寫：" + missing.join("、") });
+      return;
+    }
+    const outlineLen = countChars(proposalForm.outline);
+    if (outlineLen > PROPOSAL_OUTLINE_LIMIT) {
+      setProposalMsg({ type: "err", text: `課程大綱目前 ${outlineLen} 字，請精簡到 ${PROPOSAL_OUTLINE_LIMIT} 字以內。` });
       return;
     }
     setProposalSaving(true);
@@ -263,6 +288,10 @@ export default function ConsultantPortalPage() {
         action: "submitCourseProposal",
         instructor: member?.name || "",
         name: proposalForm.name.trim(),
+        category: proposalForm.category,
+        price,
+        format: PROPOSAL_FORMAT,
+        hours: PROPOSAL_HOURS,
         outline: proposalForm.outline.trim(),
         note: proposalForm.note.trim(),
         uid: member?.uid || "",
@@ -270,7 +299,7 @@ export default function ConsultantPortalPage() {
       const resp = await fetch(COURSE_PROPOSAL_APPS_SCRIPT_URL, { method: "POST", body: form });
       const result = await resp.json();
       if (result.success) {
-        setProposalForm({ name: "", outline: "", note: "" });
+        setProposalForm(EMPTY_PROPOSAL);
         setProposalMsg({ type: "ok", text: "✅ 已送出提案，謝謝！" });
       } else {
         throw new Error(result.error ?? "送出失敗");
@@ -532,21 +561,70 @@ export default function ConsultantPortalPage() {
             <div>
               <h2 className="text-white text-xl font-bold">土壤計畫課程提案</h2>
               <p className="text-[#639922] text-sm mt-1">
-                送出課程名稱與大綱，我們會盡快與您聯繫討論細節。
+                以成長意識為核心，從五大面向擇一切入設計一堂工作坊。送出後我們會盡快與您聯繫討論細節。
               </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-[#3B6D11] py-3 text-sm text-white/80">
+              <span className="bg-[#639922] text-white rounded-full px-3 py-0.5 text-xs font-bold">統一規格</span>
+              <span>形式 <b className="text-white">{PROPOSAL_FORMAT}</b></span>
+              <span>時數 <b className="text-white">{PROPOSAL_HOURS} 小時</b></span>
+              <span>課程範疇 <b className="text-white">五選一</b></span>
             </div>
 
             <div className="bg-[#1a3a0f] rounded-xl p-5 border border-[#3B6D11] space-y-4">
               <ProfileFormField label="課程名稱 *">
-                <input type="text" value={proposalForm.name}
+                <input type="text" value={proposalForm.name} maxLength={60}
                   onChange={e => setProposalForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="例：看懂人的招募面談工作坊" className={inputCls} />
               </ProfileFormField>
-              <ProfileFormField label="課程大綱 *">
+
+              <div>
+                <p id="proposal-category-label" className="block text-[#97C459] text-xs mb-1.5">課程範疇 *（土壤計畫五大面向，擇一）</p>
+                <div role="radiogroup" aria-labelledby="proposal-category-label" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {PROPOSAL_CATEGORIES.map(c => {
+                    const checked = proposalForm.category === c.key;
+                    return (
+                      <label key={c.key}
+                        className={`cursor-pointer rounded-lg border px-3 py-2 transition-colors ${
+                          checked ? "border-[#639922] bg-[#639922]/20" : "border-[#3B6D11] hover:border-[#639922]/60"}`}>
+                        <input type="radio" name="proposal-category" value={c.key} checked={checked}
+                          onChange={() => setProposalForm(f => ({ ...f, category: c.key }))}
+                          className="sr-only" />
+                        <span className="block text-white text-sm font-semibold">{c.key}</span>
+                        <span className="block text-white/60 text-xs">{c.en}・{c.q}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <ProfileFormField label="建議售價 *（每人，新台幣）">
+                <div className="flex items-center gap-2">
+                  <span className="text-white/60 text-sm font-semibold">NT$</span>
+                  <input type="number" inputMode="numeric" min={0} step={100} value={proposalForm.price}
+                    onChange={e => setProposalForm(f => ({ ...f, price: e.target.value }))}
+                    placeholder="例：6800" className={inputCls} />
+                </div>
+              </ProfileFormField>
+
+              <ProfileFormField label={`課程大綱 *（${PROPOSAL_OUTLINE_LIMIT} 字以內）`}>
+                <p className="text-xs text-white/60 mb-2">
+                  設計提示：這堂課想讓學員在這個面向「動手做」什麼？又想在成長意識上留下什麼「看見」？
+                </p>
                 <textarea rows={6} value={proposalForm.outline}
                   onChange={e => setProposalForm(f => ({ ...f, outline: e.target.value }))}
-                  placeholder="建議包含：課程目標、單元安排、學員學完能做到什麼。"
+                  placeholder="建議包含：課程目標、六小時的單元安排、學員學完能做到什麼。"
                   className={inputCls + " resize-none"} />
+                {(() => {
+                  const n = countChars(proposalForm.outline);
+                  return (
+                    <p className={`text-right text-xs mt-1 tabular-nums ${
+                      n > PROPOSAL_OUTLINE_LIMIT ? "text-red-400 font-bold" : "text-white/50"}`}>
+                      {n} / {PROPOSAL_OUTLINE_LIMIT} 字
+                    </p>
+                  );
+                })()}
               </ProfileFormField>
               <ProfileFormField label="說明（選填）">
                 <textarea rows={2} value={proposalForm.note}
